@@ -9,6 +9,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider } from "@tanstack/react-router";
 import "./index.css";
 import "./styles/tab-navigation.css";
+import "./i18n";
 import { router } from "@/routes";
 import { AuthProvider } from "@/context/auth";
 import { ErrorBoundary } from "@/components/ErrorBoundary";

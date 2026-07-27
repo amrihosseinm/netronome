@@ -249,7 +249,10 @@ func (s *Server) RegisterRoutes() {
 			protected.GET("/iperf/servers", iperfHandler.GetServers)
 			protected.DELETE("/iperf/servers/:id", iperfHandler.DeleteServer)
 
-			// Packet Loss monitoring routes
+						// DNS benchmark route
+						protected.GET("/dns/benchmark", handlers.HandleDNSBenchmark)
+
+						// Packet Loss monitoring routes
 			if s.packetLossService != nil {
 				packetLossHandler := handlers.NewPacketLossHandler(s.db, s.packetLossService, s.scheduler)
 				protected.GET("/packetloss/monitors", packetLossHandler.GetMonitors)

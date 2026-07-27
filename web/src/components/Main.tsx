@@ -14,6 +14,7 @@ import { DashboardTab } from "./speedtest/DashboardTab";
 import { SpeedTestTab } from "./speedtest/SpeedTestTab";
 import { TracerouteTab } from "./speedtest/TracerouteTab";
 import { MonitorTab } from "./monitor/MonitorTab";
+import { DnsTab } from "./dns/DnsTab";
 import { showToast } from "@/components/common/Toast";
 import {
   ChartBarIcon,
@@ -99,9 +100,14 @@ export default function Main({ isPublic = false }: MainProps) {
       label: "Speed Test",
       icon: <PlayIcon className="w-5 h-5" />,
     },
-    {
+        {
       id: "traceroute",
       label: "Traceroute",
+      icon: <GlobeAltIcon className="w-5 h-5" />,
+    },
+    {
+      id: "dns",
+      label: "DNS Tools",
       icon: <GlobeAltIcon className="w-5 h-5" />,
     },
     {
@@ -580,7 +586,7 @@ export default function Main({ isPublic = false }: MainProps) {
             </motion.div>
           )}
 
-          {!isPublic && activeTab === "traceroute" && (
+                    {!isPublic && activeTab === "traceroute" && (
             <motion.div
               key="traceroute"
               initial={{ opacity: 0, y: 20 }}
@@ -589,6 +595,18 @@ export default function Main({ isPublic = false }: MainProps) {
               transition={{ duration: 0.3 }}
             >
               <TracerouteTab />
+            </motion.div>
+          )}
+
+          {!isPublic && activeTab === "dns" && (
+            <motion.div
+              key="dns"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <DnsTab />
             </motion.div>
           )}
 
