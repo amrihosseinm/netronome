@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   AreaChart,
   Area,
@@ -44,6 +45,7 @@ export const MonitorBandwidthChart: React.FC<MonitorBandwidthChartProps> = ({
   selectedTimeRange = "24h",
   onTimeRangeChange,
 }) => {
+  const { t } = useTranslation();
 
   const formatTooltipValue = (value: number) => {
     return formatBytes(value);
@@ -102,13 +104,13 @@ export const MonitorBandwidthChart: React.FC<MonitorBandwidthChartProps> = ({
       className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800"
     >
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <ClockIcon className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
             {title}
           </h3>
         </div>
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center gap-1">
           {["6h", "12h", "24h", "48h", "7d", "30d"].map((range) => (
             <button
               key={range}
@@ -183,7 +185,7 @@ export const MonitorBandwidthChart: React.FC<MonitorBandwidthChartProps> = ({
                 stroke="#6366F1"
                 fillOpacity={1}
                 fill="url(#colorRxPeak)"
-                name="Download Peak"
+                name={t("monitor.bandwidthChart.downloadPeak", "Download Peak")}
                 strokeWidth={1}
               />
             )}
@@ -194,7 +196,7 @@ export const MonitorBandwidthChart: React.FC<MonitorBandwidthChartProps> = ({
                 stroke="#34D399"
                 fillOpacity={1}
                 fill="url(#colorTxPeak)"
-                name="Upload Peak"
+                name={t("monitor.bandwidthChart.uploadPeak", "Upload Peak")}
                 strokeWidth={1}
               />
             )}
@@ -204,7 +206,7 @@ export const MonitorBandwidthChart: React.FC<MonitorBandwidthChartProps> = ({
               stroke="#3B82F6"
               fillOpacity={1}
               fill="url(#colorRx)"
-              name="Download"
+              name={t("monitor.bandwidthChart.download", "Download")}
               strokeWidth={2}
             />
             <Area
@@ -213,7 +215,7 @@ export const MonitorBandwidthChart: React.FC<MonitorBandwidthChartProps> = ({
               stroke="#10B981"
               fillOpacity={1}
               fill="url(#colorTx)"
-              name="Upload"
+              name={t("monitor.bandwidthChart.upload", "Upload")}
               strokeWidth={2}
             />
           </AreaChart>
@@ -225,9 +227,9 @@ export const MonitorBandwidthChart: React.FC<MonitorBandwidthChartProps> = ({
         <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
           <div className="flex justify-between items-center">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Total Usage ({selectedTimeRange})
+              {t("monitor.bandwidthChart.totalUsage", "Total Usage ({{range}})", { range: selectedTimeRange })}
             </p>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center gap-4">
               <span className="text-sm">
                 <span className="text-blue-600 dark:text-blue-400 font-medium">
                   ↓ {formatBytes(stats.totalRx)}

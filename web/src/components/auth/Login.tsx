@@ -16,17 +16,19 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
+import i18n from "@/i18n";
 
 // Error message mapping for cleaner code
 const ERROR_MESSAGES: Record<string, string> = {
-  "Invalid credentials": "Incorrect username or password",
-  "Invalid request data": "Please check your input and try again",
-  "Failed to get user": "Unable to verify user credentials",
-  "Failed to generate session token": "Authentication failed, please try again",
+  "Invalid credentials": "auth.errors.invalidCredentials",
+  "Invalid request data": "auth.errors.invalidRequestData",
+  "Failed to get user": "auth.errors.failedToGetUser",
+  "Failed to generate session token": "auth.errors.failedToGenerateToken",
 };
 
 const OIDC_ERROR_MESSAGES: Record<string, string> = {
-  oidc_unavailable: "OpenID Connect sign-in is currently unavailable. Use local credentials if you have them.",
+  oidc_unavailable: "auth.errors.oidcUnavailable",
 };
 
 function getInitialLoginError(): string {
@@ -35,10 +37,12 @@ function getInitialLoginError(): string {
     return "";
   }
 
-  return OIDC_ERROR_MESSAGES[errorCode] || "Unable to sign in with OpenID Connect.";
+  const key = OIDC_ERROR_MESSAGES[errorCode] || "auth.errors.oidcSignInFailed";
+  return i18n.t(key);
 }
 
 export default function Login() {
+  const { t } = useTranslation();
   const { login, checkRegistrationStatus } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -93,9 +97,10 @@ export default function Login() {
           return;
         }
 
-        setError(ERROR_MESSAGES[errorMessage] || "An error occurred while signing in");
+        const key = ERROR_MESSAGES[errorMessage];
+        setError(key ? t(key) : t("auth.errors.signInGeneric", "An error occurred while signing in"));
       } else {
-        setError("Unable to sign in at this time");
+        setError(t("auth.errors.signInUnavailable", "Unable to sign in at this time"));
       }
     }
   };
@@ -121,7 +126,7 @@ export default function Login() {
             Netronome
           </h2>
           <p className="text-sm text-gray-600 dark:text-gray-400 pointer-events-none select-none">
-            network performance testing
+            {t("app.tagline", "Network Performance Testing").toLowerCase()}
           </p>
         </CardHeader>
 
@@ -140,9 +145,9 @@ export default function Login() {
                 className="w-full border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400"
                 size="lg"
               >
-                <span className="flex items-center" aria-label="Sign in with OpenID">
-                  Sign in with
-                  <FontAwesomeIcon icon={faOpenid} className="text-lg ml-2" aria-hidden="true" />
+                <span className="flex items-center" aria-label={t("auth.signInWithOpenId", "Sign in with OpenID")}>
+                  {t("auth.signInWith", "Sign in with")}
+                  <FontAwesomeIcon icon={faOpenid} className="text-lg ms-2" aria-hidden="true" />
                 </span>
               </Button>
             )}
@@ -153,7 +158,7 @@ export default function Login() {
                   <div className="w-full border-t border-gray-200 dark:border-gray-700" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400">
-                  <span className="bg-white dark:bg-gray-850 px-3">or</span>
+                  <span className="bg-white dark:bg-gray-850 px-3">{t("auth.or", "or")}</span>
                 </div>
               </div>
             )}
@@ -163,7 +168,7 @@ export default function Login() {
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="username" className="sr-only">
-                      Username
+                      {t("auth.username", "Username")}
                     </Label>
                     <Input
                       id="username"
@@ -171,7 +176,7 @@ export default function Login() {
                       type="text"
                       autoComplete="username"
                       required
-                      placeholder="Username"
+                      placeholder={t("auth.username", "Username")}
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className={cn(
@@ -182,7 +187,7 @@ export default function Login() {
                   </div>
                   <div>
                     <Label htmlFor="password" className="sr-only">
-                      Password
+                      {t("auth.password", "Password")}
                     </Label>
                     <Input
                       id="password"
@@ -190,7 +195,7 @@ export default function Login() {
                       type="password"
                       autoComplete="current-password"
                       required
-                      placeholder="Password"
+                      placeholder={t("auth.password", "Password")}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className={cn(
@@ -202,14 +207,14 @@ export default function Login() {
                 </div>
 
                 <Button type="submit" className="w-full" size="lg">
-                  Sign in
+                  {t("auth.signIn", "Sign in")}
                 </Button>
               </form>
             )}
 
             {!authOptions.hasUsers && authOptions.oidcConfigured && !authOptions.oidcReady && (
               <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-                OpenID Connect is configured but the provider is unavailable right now.
+                {t("auth.oidcConfiguredUnavailable", "OpenID Connect is configured but the provider is unavailable right now.")}
               </div>
             )}
           </div>

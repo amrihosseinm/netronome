@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ClockIcon, GlobeAltIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/Button";
@@ -23,6 +24,7 @@ import {
 import { showToast } from "@/components/common/Toast";
 
 export const TimeFormatSettings: React.FC = () => {
+  const { t } = useTranslation();
   const [settings, setSettings] = useState<TimeSettings>(getTimeFormatSettings);
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -35,8 +37,8 @@ export const TimeFormatSettings: React.FC = () => {
   const saveSettings = () => {
     saveTimeFormatSettings(settings);
     setHasChanges(false);
-    showToast("Time format settings saved", "success", {
-      description: "Changes will be applied across the application"
+    showToast(t("settings.timeFormat.savedTitle", "Time format settings saved"), "success", {
+      description: t("settings.timeFormat.savedDescription", "Changes will be applied across the application")
     });
   };
 
@@ -62,10 +64,10 @@ export const TimeFormatSettings: React.FC = () => {
         <div>
           <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <ClockIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            Time & Date Settings
+            {t("settings.timeFormat.title", "Time & Date Settings")}
           </h3>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Configure timezone and time format preferences for the application
+            {t("settings.timeFormat.description", "Configure timezone and time format preferences for the application")}
           </p>
         </div>
 
@@ -76,7 +78,7 @@ export const TimeFormatSettings: React.FC = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <CheckIcon className="w-4 h-4" />
-              Save Changes
+              {t("common.saveChanges", "Save Changes")}
             </Button>
             <Button 
               onClick={() => {
@@ -85,7 +87,7 @@ export const TimeFormatSettings: React.FC = () => {
               }}
               variant="secondary"
             >
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
           </div>
         )}
@@ -97,13 +99,13 @@ export const TimeFormatSettings: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <GlobeAltIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              Timezone
+              {t("settings.timeFormat.timezoneCardTitle", "Timezone")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Select Timezone
+                {t("settings.timeFormat.selectTimezoneLabel", "Select Timezone")}
               </label>
               <Select
                 value={settings.timezone}
@@ -117,8 +119,8 @@ export const TimeFormatSettings: React.FC = () => {
                 <SelectContent className="max-h-[300px] overflow-y-auto">
                   <SelectItem value="auto">
                     <div className="flex items-center justify-between w-full">
-                      <span>Auto (Browser Timezone)</span>
-                      <Badge variant="secondary" className="ml-2">Recommended</Badge>
+                      <span>{t("settings.timeFormat.autoTimezoneLabel", "Auto (Browser Timezone)")}</span>
+                      <Badge variant="secondary" className="ms-2">{t("settings.timeFormat.recommendedBadge", "Recommended")}</Badge>
                     </div>
                   </SelectItem>
                   
@@ -128,7 +130,7 @@ export const TimeFormatSettings: React.FC = () => {
                     <SelectItem key={tz.value} value={tz.value}>
                       <div className="flex items-center justify-between w-full">
                         <span>{tz.label}</span>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 ms-2">
                           {tz.offset}
                         </span>
                       </div>
@@ -143,13 +145,13 @@ export const TimeFormatSettings: React.FC = () => {
                 <GlobeAltIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
                   <div className="font-medium text-blue-900 dark:text-blue-300">
-                    Current Timezone: {currentTimezone}
+                    {t("settings.timeFormat.currentTimezoneLabel", "Current Timezone: {{timezone}}", { timezone: currentTimezone })}
                   </div>
                   <div className="text-blue-700 dark:text-blue-400 mt-1">
-                    All dates and times will be displayed in this timezone.
+                    {t("settings.timeFormat.timezoneExplanation", "All dates and times will be displayed in this timezone.")}
                     {settings.timezone === "auto" && (
                       <span className="block mt-1 text-xs">
-                        Using browser detection. This will adapt automatically to your system timezone changes.
+                        {t("settings.timeFormat.autoDetectionNote", "Using browser detection. This will adapt automatically to your system timezone changes.")}
                       </span>
                     )}
                   </div>
@@ -164,17 +166,17 @@ export const TimeFormatSettings: React.FC = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ClockIcon className="w-5 h-5 text-green-600 dark:text-green-400" />
-              Time Format
+              {t("settings.timeFormat.timeFormatCardTitle", "Time Format")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  24-Hour Format
+                  {t("settings.timeFormat.use24HourLabel", "24-Hour Format")}
                 </label>
                 <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  Use 24-hour clock instead of 12-hour with AM/PM
+                  {t("settings.timeFormat.use24HourDescription", "Use 24-hour clock instead of 12-hour with AM/PM")}
                 </p>
               </div>
               <Switch
@@ -188,24 +190,24 @@ export const TimeFormatSettings: React.FC = () => {
                 <ClockIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
                   <div className="font-medium text-green-900 dark:text-green-300">
-                    Preview
+                    {t("settings.timeFormat.previewLabel", "Preview")}
                   </div>
                   <div className="text-green-700 dark:text-green-400 mt-1 space-y-1">
-                    <div>Time: <span className="font-mono">{timeExample}</span></div>
-                    <div>Full: <span className="font-mono">{dateTimeExample}</span></div>
+                    <div>{t("settings.timeFormat.timeLabel", "Time:")} <span className="font-mono">{timeExample}</span></div>
+                    <div>{t("settings.timeFormat.fullLabel", "Full:")} <span className="font-mono">{dateTimeExample}</span></div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="text-xs text-gray-600 dark:text-gray-400">
-              <strong>Note:</strong> These settings affect how times are displayed in:
+              <strong>{t("settings.timeFormat.noteLabel", "Note:")}</strong> {t("settings.timeFormat.noteIntro", "These settings affect how times are displayed in:")}
               <ul className="list-disc list-inside mt-1 space-y-1">
-                <li>Speed test history charts and tooltips</li>
-                <li>Schedule manager and next run times</li>
-                <li>Monitor bandwidth charts</li>
-                <li>Notification timestamps</li>
-                <li>All other time displays throughout the application</li>
+                <li>{t("settings.timeFormat.noteItems.speedtestCharts", "Speed test history charts and tooltips")}</li>
+                <li>{t("settings.timeFormat.noteItems.scheduleManager", "Schedule manager and next run times")}</li>
+                <li>{t("settings.timeFormat.noteItems.monitorCharts", "Monitor bandwidth charts")}</li>
+                <li>{t("settings.timeFormat.noteItems.notificationTimestamps", "Notification timestamps")}</li>
+                <li>{t("settings.timeFormat.noteItems.allOtherDisplays", "All other time displays throughout the application")}</li>
               </ul>
             </div>
           </CardContent>
@@ -218,10 +220,10 @@ export const TimeFormatSettings: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white">
-                Quick Actions
+                {t("settings.timeFormat.quickActionsTitle", "Quick Actions")}
               </h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Reset settings or apply common configurations
+                {t("settings.timeFormat.quickActionsDescription", "Reset settings or apply common configurations")}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -229,7 +231,7 @@ export const TimeFormatSettings: React.FC = () => {
                 onClick={resetToDefaults}
                 variant="outline"
               >
-                Reset to Defaults
+                {t("settings.timeFormat.resetToDefaults", "Reset to Defaults")}
               </Button>
             </div>
           </div>

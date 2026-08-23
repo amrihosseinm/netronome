@@ -1,30 +1,37 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 import en from './locales/en.json';
 import fa from './locales/fa.json';
 
+const resources = {
+  en: {
+    translation: en,
+  },
+  fa: {
+    translation: fa,
+  },
+};
+
 i18n
-  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: {
-      en: { translation: en },
-      fa: { translation: fa }
-    },
+    resources,
+    lng: localStorage.getItem('language') || 'en', // Default to English or saved preference
     fallbackLng: 'en',
     interpolation: {
-      escapeValue: false, // not needed for react as it escapes by default
-    }
+      escapeValue: false, // React already safes from xss
+    },
   });
 
+// Update the direction whenever language changes
 i18n.on('languageChanged', (lng) => {
   document.documentElement.dir = lng === 'fa' ? 'rtl' : 'ltr';
   document.documentElement.lang = lng;
+  localStorage.setItem('language', lng);
 });
 
-// Set initial direction
-const initialLng = i18n.language || window.localStorage.i18nextLng || 'en';
-document.documentElement.dir = initialLng.startsWith('fa') ? 'rtl' : 'ltr';
+// Initial setup on load
+document.documentElement.dir = i18n.language === 'fa' ? 'rtl' : 'ltr';
+document.documentElement.lang = i18n.language;
 
 export default i18n;

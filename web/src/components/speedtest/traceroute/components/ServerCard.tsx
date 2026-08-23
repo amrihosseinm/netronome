@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { Server } from "@/types/types";
 import { extractHostname } from "../utils/tracerouteUtils";
@@ -26,6 +27,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({
   onSelect,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
   const { settings: distanceSettings } = useDistanceSettings();
 
   return (
@@ -36,7 +38,7 @@ export const ServerCard: React.FC<ServerCardProps> = ({
     >
       <button
         onClick={() => onSelect(server)}
-        className={`w-full p-3 rounded-lg text-left transition-colors ${
+        className={`w-full p-3 rounded-lg text-start transition-colors ${
           isSelected
             ? "bg-blue-500/10 border-blue-400/50 shadow-lg"
             : "bg-gray-200/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-800 hover:bg-gray-300/50 dark:hover:bg-gray-800 shadow-lg"
@@ -48,16 +50,16 @@ export const ServerCard: React.FC<ServerCardProps> = ({
             {server.isIperf ? server.name : server.sponsor}
           </span>
           <span className="text-gray-600 dark:text-gray-400 text-sm">
-            {server.isIperf ? "iperf3 Server" : server.name}
+            {server.isIperf ? t("traceroute.iperfServer", "iperf3 Server") : server.name}
             <span className="block truncate text-xs" title={server.host}>
               {extractHostname(server.host)}
             </span>
           </span>
           <span className="text-gray-600 dark:text-gray-400 text-sm mt-1">
             {server.isIperf
-              ? "Custom Server"
+              ? t("traceroute.customServer", "Custom Server")
               : `${server.country} - ${formatDistance(server.distance, distanceSettings)}`}
-            <span className={`ml-2 ${getServerTypeColorClass(server)}`}>
+            <span className={`ms-2 ${getServerTypeColorClass(server)}`}>
               {getServerTypeLabel(server)}
             </span>
           </span>

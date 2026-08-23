@@ -17,6 +17,8 @@ import { SpeedTestResult, TimeRange, PaginatedResponse } from "@/types/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { getHistory, getPublicHistory } from "@/api/speedtest";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
+
 import { formatters } from "@/utils/timeSettings";
 import {
   Collapsible,
@@ -72,12 +74,12 @@ interface VisibleMetrics {
   jitter: boolean;
 }
 
-const timeRangeOptions: { value: TimeRange; label: string }[] = [
-  { value: "1d", label: "24 Hours" },
-  { value: "3d", label: "3 Days" },
-  { value: "1w", label: "1 Week" },
-  { value: "1m", label: "1 Month" },
-  { value: "all", label: "All Time" },
+const getTimeRangeOptions = (t: (key: string, fallback: string) => string): { value: TimeRange; label: string }[] => [
+  { value: "1d", label: t("speedtest.speedHistoryChart.twentyFourHours", "24 Hours") },
+  { value: "3d", label: t("speedtest.speedHistoryChart.threeDays", "3 Days") },
+  { value: "1w", label: t("speedtest.speedHistoryChart.oneWeek", "1 Week") },
+  { value: "1m", label: t("speedtest.speedHistoryChart.oneMonth", "1 Month") },
+  { value: "all", label: t("speedtest.speedHistoryChart.allTime", "All Time") },
 ];
 
 const ChartSkeleton: React.FC = () => (
@@ -129,7 +131,13 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
   multipleServerDisplayMode: propMultipleServerDisplayMode,
   onMultipleServerDisplayModeChange,
 }) => {
+  const { t } = useTranslation();
   const isMobile = useIsMobile();
+  const timeRangeOptions = getTimeRangeOptions(t);
+  const downloadLabel = t("speedtest.speedHistoryChart.download", "Download");
+  const uploadLabel = t("speedtest.speedHistoryChart.upload", "Upload");
+  const latencyLabel = t("speedtest.speedHistoryChart.latency", "Latency");
+  const jitterLabel = t("speedtest.speedHistoryChart.jitter", "Jitter");
 
   const [visibleMetrics, setVisibleMetrics] = useState<VisibleMetrics>(() => {
     const saved = localStorage.getItem("speedtest-visible-metrics");
@@ -222,8 +230,8 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
         upload: Number(item.uploadSpeed) || 0,
         latency: Number(parseFloat(typeof item.latency === 'string' ? item.latency.replace("ms", "") : item.latency) || 0),
         jitter: Number(item.jitter) || 0,
-        serverName: item.serverName || "Unknown Server",
-        serverHost: item.serverHost || item.serverName || "Unknown Server",
+        serverName: item.serverName || t("speedtest.speedHistoryChart.unknownServer", "Unknown Server"),
+        serverHost: item.serverHost || item.serverName || t("speedtest.speedHistoryChart.unknownServer", "Unknown Server"),
         testType: item.testType || "speedtest",
       }))
       .filter(
@@ -319,7 +327,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
       <div key={`server-${serverName}`} className="mb-6">
         <div className="mb-2">
           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {serverName} ({serverData.length} data points)
+            {serverName} ({t("speedtest.speedHistoryChart.dataPoints", "{{count}} data points", { count: serverData.length })})
           </h4>
         </div>
         <div className="h-80 bg-gray-50/95 dark:bg-gray-850/95 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
@@ -425,9 +433,9 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                 }}
                 formatter={(value: number | string, name: string) => {
                   if (typeof value === "number") {
-                    if (name === "Download" || name === "Upload") {
+                    if (name === downloadLabel || name === uploadLabel) {
                       return [`${value.toFixed(1)} Mbps`, name];
-                    } else if (name === "Latency" || name === "Jitter") {
+                    } else if (name === latencyLabel || name === jitterLabel) {
                       return [`${value.toFixed(1)} ms`, name];
                     }
                   }
@@ -444,7 +452,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                   yAxisId="speed"
                   type="monotone"
                   dataKey="download"
-                  name="Download"
+                  name={downloadLabel}
                   stroke="#60a5fa"
                   strokeWidth={3}
                   dot={false}
@@ -463,7 +471,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                   yAxisId="speed"
                   type="monotone"
                   dataKey="upload"
-                  name="Upload"
+                  name={uploadLabel}
                   stroke="#34d399"
                   strokeWidth={3}
                   dot={false}
@@ -482,7 +490,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                   yAxisId="latency"
                   type="monotone"
                   dataKey="latency"
-                  name="Latency"
+                  name={latencyLabel}
                   stroke="#fbbf24"
                   strokeWidth={2}
                   dot={false}
@@ -501,7 +509,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                   yAxisId="latency"
                   type="monotone"
                   dataKey="jitter"
-                  name="Jitter"
+                  name={jitterLabel}
                   stroke="#c084fc"
                   strokeWidth={2}
                   dot={false}
@@ -681,7 +689,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
             // Allow tooltip to work on touch devices
             trigger={isMobile ? "click" : "hover"}
             formatter={(value: number, name: string) => {
-              if (name === "Download" || name === "Upload") {
+              if (name === downloadLabel || name === uploadLabel) {
                 return [`${value.toFixed(isMobile ? 1 : 2)} Mbps`, name];
               }
               return [`${value.toFixed(isMobile ? 1 : 2)} ms`, name];
@@ -710,7 +718,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                       }}
                     >
                       {shouldRedact
-                        ? "redacted host"
+                        ? t("speedtest.speedHistoryChart.redactedHost", "redacted host")
                         : data.serverHost || data.serverName}
                       {data.testType && (
                         <span
@@ -741,7 +749,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
               yAxisId="speed"
               type="monotone"
               dataKey="download"
-              name="Download"
+              name={downloadLabel}
               stroke="#60a5fa"
               strokeWidth={3}
               dot={false}
@@ -760,7 +768,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
               yAxisId="speed"
               type="monotone"
               dataKey="upload"
-              name="Upload"
+              name={uploadLabel}
               stroke="#34d399"
               strokeWidth={3}
               dot={false}
@@ -779,7 +787,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
               yAxisId="latency"
               type="monotone"
               dataKey="latency"
-              name="Latency"
+              name={latencyLabel}
               stroke="#fbbf24"
               strokeWidth={2}
               dot={false}
@@ -798,7 +806,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
               yAxisId="latency"
               type="monotone"
               dataKey="jitter"
-              name="Jitter"
+              name={jitterLabel}
               stroke="#c084fc"
               strokeWidth={2}
               dot={false}
@@ -814,7 +822,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
         </AreaChart>
       </ResponsiveContainer>
     ),
-    [allResults, timeRange, visibleMetrics, isMobile, isPublic, availableServers]
+    [allResults, timeRange, visibleMetrics, isMobile, isPublic, availableServers, downloadLabel, uploadLabel, latencyLabel, jitterLabel, t]
   );
 
   const [isOpen, setIsOpen] = useState(() => {
@@ -843,7 +851,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                 isOpen ? "rounded-t-xl" : "rounded-xl",
                 "border border-gray-200 dark:border-gray-800",
                 isOpen && "border-b-0",
-                "text-left transition-colors touch-manipulation"
+                "text-start transition-colors touch-manipulation"
               )}
             >
               <div className="flex items-center gap-2">
@@ -860,7 +868,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                   </div>
                 )}
                 <h2 className="text-gray-900 dark:text-white text-lg sm:text-xl font-semibold p-1 select-none">
-                  Speedtest History
+                  {t("speedtest.speedHistoryChart.title", "Speedtest History")}
                 </h2>
               </div>
               <div className="p-1 -m-1">
@@ -895,25 +903,25 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                       {
                         key: "download",
                         color: "#60a5fa",
-                        label: "Download",
+                        label: downloadLabel,
                         icon: <FaDownload size={14} />,
                       },
                       {
                         key: "upload",
                         color: "#34d399",
-                        label: "Upload",
+                        label: uploadLabel,
                         icon: <FaUpload size={14} />,
                       },
                       {
                         key: "latency",
                         color: "#fbbf24",
-                        label: "Latency",
+                        label: latencyLabel,
                         icon: <FaClock size={14} />,
                       },
                       {
                         key: "jitter",
                         color: "#c084fc",
-                        label: "Jitter",
+                        label: jitterLabel,
                         icon: <FaWaveSquare size={14} />,
                       },
                     ].map(({ key, label, icon, color }) => {
@@ -927,9 +935,11 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                               key as keyof typeof visibleMetrics
                             )
                           }
-                          aria-label={`${
-                            isActive ? "Hide" : "Show"
-                          } ${label} metric`}
+                          aria-label={
+                            isActive
+                              ? t("speedtest.speedHistoryChart.hideMetric", "Hide {{label}} metric", { label })
+                              : t("speedtest.speedHistoryChart.showMetric", "Show {{label}} metric", { label })
+                          }
                           aria-pressed={isActive}
                           className={cn(
                             "relative px-2.5 sm:px-2 py-2 sm:py-1.5",
@@ -979,7 +989,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                   <div className="hidden sm:flex sm:justify-end sm:-mt-12 sm:gap-3">
                     {/* Server Filter Controls */}
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Server:</span>
+                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t("speedtest.serverLabel", "Server:")}</span>
                       
                       {/* Server Selection Dropdown */}
                       <Select
@@ -987,11 +997,11 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                         onValueChange={handleServerDropdownChange}
                       >
                         <SelectTrigger className="w-[180px] px-3 py-1.5 text-xs">
-                          <SelectValue placeholder="Select servers..." />
+                          <SelectValue placeholder={t("speedtest.speedHistoryChart.selectServersPlaceholder", "Select servers...")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all">All servers</SelectItem>
-                          <SelectItem value="multiple">Select multiple...</SelectItem>
+                          <SelectItem value="all">{t("speedtest.allServers", "All Servers")}</SelectItem>
+                          <SelectItem value="multiple">{t("speedtest.speedHistoryChart.selectMultiple", "Select multiple...")}</SelectItem>
                           {availableServers.map((server) => (
                             <SelectItem key={server.id} value={server.id}>
                               {server.name}
@@ -1005,16 +1015,16 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button variant="outline" size="sm" className="text-xs">
-                              Multiple ({selectedMultipleServers.size})
+                              {t("speedtest.speedHistoryChart.multipleCount", "Multiple ({{count}})", { count: selectedMultipleServers.size })}
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-64 p-3">
                             <div className="space-y-2">
-                              <div className="font-medium text-sm">Select Servers:</div>
+                              <div className="font-medium text-sm">{t("speedtest.speedHistoryChart.selectServersLabel", "Select Servers:")}</div>
                               {availableServers.length > 0 ? (
                                 <div className="space-y-2 max-h-48 overflow-y-auto">
                                   {availableServers.map((server) => (
-                                    <div key={server.id} className="flex items-center space-x-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
+                                    <div key={server.id} className="flex items-center gap-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded">
                                       <Checkbox
                                         id={server.id}
                                         checked={selectedMultipleServers.has(server.id)}
@@ -1030,15 +1040,15 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                                 </div>
                               ) : (
                                 <div className="text-sm text-gray-500">
-                                  No servers available
+                                  {t("speedtest.speedHistoryChart.noServersAvailable", "No servers available")}
                                 </div>
                               )}
                               
                               {/* Display Mode Selection */}
                               {selectedMultipleServers.size > 0 && (
                                 <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
-                                  <div className="font-medium text-sm mb-2">Display Mode:</div>
-                                  <div className="flex items-center space-x-2">
+                                  <div className="font-medium text-sm mb-2">{t("speedtest.speedHistoryChart.displayModeLabel", "Display Mode:")}</div>
+                                  <div className="flex items-center gap-2">
                                     <Checkbox
                                       id="overlay-mode"
                                       checked={multipleServerDisplayMode === "overlay"}
@@ -1049,10 +1059,10 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                                       }}
                                     />
                                     <label htmlFor="overlay-mode" className="text-sm cursor-pointer">
-                                      Overlay on same chart
+                                      {t("speedtest.speedHistoryChart.overlaySameChart", "Overlay on same chart")}
                                     </label>
                                   </div>
-                                  <div className="flex items-center space-x-2 mt-1">
+                                  <div className="flex items-center gap-2 mt-1">
                                     <Checkbox
                                       id="separate-mode"
                                       checked={multipleServerDisplayMode === "separate"}
@@ -1063,7 +1073,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                                       }}
                                     />
                                     <label htmlFor="separate-mode" className="text-sm cursor-pointer">
-                                      Show in separate charts
+                                      {t("speedtest.speedHistoryChart.showSeparateCharts", "Show in separate charts")}
                                     </label>
                                   </div>
                                 </div>
@@ -1142,20 +1152,21 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                       >
                         <div className="text-center">
                           <h3 className="text-gray-900 dark:text-white text-lg font-medium mb-2">
-                            No tests in the last{" "}
-                            {timeRange === "1d"
-                              ? "24 hours"
-                              : timeRange === "3d"
-                              ? "3 days"
-                              : timeRange === "1w"
-                              ? "week"
-                              : timeRange === "1m"
-                              ? "month"
-                              : "selected period"}
+                            {t("speedtest.speedHistoryChart.noTestsInLast", "No tests in the last {{period}}", {
+                              period:
+                                timeRange === "1d"
+                                  ? t("speedtest.speedHistoryChart.period24Hours", "24 hours")
+                                  : timeRange === "3d"
+                                  ? t("speedtest.speedHistoryChart.period3Days", "3 days")
+                                  : timeRange === "1w"
+                                  ? t("speedtest.speedHistoryChart.periodWeek", "week")
+                                  : timeRange === "1m"
+                                  ? t("speedtest.speedHistoryChart.periodMonth", "month")
+                                  : t("speedtest.speedHistoryChart.periodSelected", "selected period"),
+                            })}
                           </h3>
                           <p className="text-gray-600 dark:text-gray-400">
-                            Try selecting a different time range to view your
-                            test history.
+                            {t("speedtest.speedHistoryChart.tryDifferentTimeRange", "Try selecting a different time range to view your test history.")}
                           </p>
                         </div>
                       </motion.div>
@@ -1186,7 +1197,7 @@ export const SpeedHistoryChart: React.FC<SpeedHistoryChartProps> = ({
                         isLoading={isFetchingNextPage}
                         className="mb-4"
                       >
-                        {isFetchingNextPage ? "Loading more..." : "Load more"}
+                        {isFetchingNextPage ? t("speedtest.speedHistoryChart.loadingMore", "Loading more...") : t("speedtest.speedHistoryChart.loadMore", "Load more")}
                       </Button>
                     </motion.div>
                   </div>

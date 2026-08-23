@@ -141,7 +141,7 @@ export const MonitorResultsTable: React.FC<MonitorResultsTableProps> = ({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-300 dark:border-gray-800">
-              <th className="text-left py-2 px-3 text-gray-600 dark:text-gray-400 font-medium">
+              <th className="text-start py-2 px-3 text-gray-600 dark:text-gray-400 font-medium">
                 Time
               </th>
               <th className="text-center py-2 px-3 text-gray-600 dark:text-gray-400 font-medium">
@@ -219,7 +219,7 @@ export const MonitorResultsTable: React.FC<MonitorResultsTableProps> = ({
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 transition-colors cursor-pointer">
                             MTR
                             {result.privilegedMode !== undefined && (
-                              <span className="ml-1">
+                              <span className="ms-1">
                                 ({result.privilegedMode ? "ICMP" : "UDP"})
                               </span>
                             )}
@@ -329,7 +329,7 @@ export const MonitorResultsTable: React.FC<MonitorResultsTableProps> = ({
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-600 dark:text-purple-400">
                         MTR
                         {result.privilegedMode !== undefined && (
-                          <span className="ml-1 text-xs">
+                          <span className="ms-1 text-xs">
                             ({result.privilegedMode ? "ICMP" : "UDP"})
                           </span>
                         )}

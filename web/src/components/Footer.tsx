@@ -10,11 +10,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
 
 export const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer className="mt-4">
-      <div className="flex justify-end space-x-4">
+      <div className="flex justify-end gap-4">
         <Tooltip>
           <TooltipTrigger asChild>
             <a
@@ -32,7 +34,7 @@ export const Footer = () => {
             </a>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Discord Community</p>
+            <p>{t("footer.discordCommunity", "Discord Community")}</p>
           </TooltipContent>
         </Tooltip>
         <Tooltip>
@@ -52,7 +54,7 @@ export const Footer = () => {
             </a>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Documentation</p>
+            <p>{t("footer.documentation", "Documentation")}</p>
           </TooltipContent>
         </Tooltip>
       </div>

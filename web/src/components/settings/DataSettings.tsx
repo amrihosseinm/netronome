@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CircleStackIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,16 +20,17 @@ import { DeleteConfirmationDialog } from "@/components/common/DeleteConfirmation
 import { settingsApi } from "@/api/settings";
 import { showToast } from "@/components/common/Toast";
 
-const RETENTION_OPTIONS = [
-  { value: 7, label: "older than 7 days" },
-  { value: 30, label: "older than 30 days" },
-  { value: 90, label: "older than 90 days" },
-  { value: 365, label: "older than 1 year" },
-  { value: 0, label: "everything" },
-];
-
 export const DataSettings: React.FC = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
+
+  const RETENTION_OPTIONS = [
+    { value: 7, label: t("settings.dataSettings.retentionOptions.days7", "older than 7 days") },
+    { value: 30, label: t("settings.dataSettings.retentionOptions.days30", "older than 30 days") },
+    { value: 90, label: t("settings.dataSettings.retentionOptions.days90", "older than 90 days") },
+    { value: 365, label: t("settings.dataSettings.retentionOptions.year1", "older than 1 year") },
+    { value: 0, label: t("settings.dataSettings.retentionOptions.everything", "everything") },
+  ];
   const [olderThanDays, setOlderThanDays] = useState(30);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -39,13 +41,17 @@ export const DataSettings: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["history"] });
       queryClient.invalidateQueries({ queryKey: ["history-chart"] });
       queryClient.invalidateQueries({ queryKey: ["packetloss"] });
-      showToast("History purged", "success", {
-        description: `Deleted ${result.speedTests} speedtests and ${result.packetLoss} packet loss records`,
+      showToast(t("settings.dataSettings.purgedTitle", "History purged"), "success", {
+        description: t(
+          "settings.dataSettings.purgedDescription",
+          "Deleted {{speedTests}} speedtests and {{packetLoss}} packet loss records",
+          { speedTests: result.speedTests, packetLoss: result.packetLoss }
+        ),
       });
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : undefined;
-      showToast("Failed to purge history", "error", {
+      showToast(t("settings.dataSettings.purgeFailedTitle", "Failed to purge history"), "error", {
         description: message,
       });
     },
@@ -58,10 +64,10 @@ export const DataSettings: React.FC = () => {
       <div>
         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <CircleStackIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-          Data Settings
+          {t("settings.dataSettings.title", "Data Settings")}
         </h3>
         <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Purge historic speedtest and packet loss results
+          {t("settings.dataSettings.description", "Purge historic speedtest and packet loss results")}
         </p>
       </div>
 
@@ -69,20 +75,20 @@ export const DataSettings: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrashIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
-            Purge History
+            {t("settings.dataSettings.purgeHistoryCardTitle", "Purge History")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Delete records
+              {t("settings.dataSettings.deleteRecordsLabel", "Delete records")}
             </label>
             <Select
               value={String(olderThanDays)}
               onValueChange={(value) => setOlderThanDays(Number(value))}
             >
               <SelectTrigger className="w-full sm:w-[240px]">
-                <SelectValue placeholder="Select retention window" />
+                <SelectValue placeholder={t("settings.dataSettings.selectRetentionPlaceholder", "Select retention window")} />
               </SelectTrigger>
               <SelectContent>
                 {RETENTION_OPTIONS.map((option) => (
@@ -95,7 +101,7 @@ export const DataSettings: React.FC = () => {
           </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Permanently deletes speedtest and packet loss history. This action cannot be undone.
+            {t("settings.dataSettings.warningText", "Permanently deletes speedtest and packet loss history. This action cannot be undone.")}
           </p>
 
           <Button
@@ -104,7 +110,7 @@ export const DataSettings: React.FC = () => {
             variant="destructive"
           >
             <TrashIcon className="w-4 h-4" />
-            Purge
+            {t("settings.dataSettings.purgeButton", "Purge")}
           </Button>
         </CardContent>
       </Card>
@@ -113,9 +119,17 @@ export const DataSettings: React.FC = () => {
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={() => mutation.mutate()}
-        title="Purge History"
+        title={t("settings.dataSettings.purgeHistoryCardTitle", "Purge History")}
         itemName=""
-        description={`Permanently delete ${selected?.value === 0 ? "all history" : `history ${selected?.label}`}? This action cannot be undone.`}
+        description={
+          selected?.value === 0
+            ? t("settings.dataSettings.confirmDeleteAll", "Permanently delete all history? This action cannot be undone.")
+            : t(
+                "settings.dataSettings.confirmDeleteFiltered",
+                "Permanently delete history {{label}}? This action cannot be undone.",
+                { label: selected?.label }
+              )
+        }
         isDeleting={mutation.isPending}
       />
     </div>

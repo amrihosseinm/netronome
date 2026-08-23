@@ -22,8 +22,10 @@ import { Button } from "@/components/ui/Button";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export default function Register() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function Register() {
     };
 
   const parseErrorMessage = (err: unknown): string => {
-    if (!(err instanceof Error)) return "Registration failed";
+    if (!(err instanceof Error)) return t("auth.errors.registrationFailed", "Registration failed");
 
     const message = err.message;
     return message.includes("Error #01:")
@@ -57,7 +59,7 @@ export default function Register() {
     setError("");
 
     if (formData.password.length < 4) {
-      setError("Password must be at least 4 characters");
+      setError(t("auth.errors.passwordTooShort", "Password must be at least 4 characters"));
       return;
     }
 
@@ -99,7 +101,7 @@ export default function Register() {
             <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white pointer-events-none select-none">
               Netronome
             </CardTitle>
-            <CardDescription className="text-gray-600 dark:text-gray-400">Create your account</CardDescription>
+            <CardDescription className="text-gray-600 dark:text-gray-400">{t("auth.createYourAccount", "Create your account")}</CardDescription>
           </CardHeader>
 
           <CardContent>
@@ -118,11 +120,11 @@ export default function Register() {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-gray-700 dark:text-gray-300">Username</Label>
+                  <Label htmlFor="username" className="text-gray-700 dark:text-gray-300">{t("auth.username", "Username")}</Label>
                   <Input
                     id="username"
                     type="text"
-                    placeholder="Enter your username"
+                    placeholder={t("auth.enterUsername", "Enter your username")}
                     value={formData.username}
                     onChange={handleInputChange("username")}
                     autoComplete="username"
@@ -132,11 +134,11 @@ export default function Register() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">Password</Label>
+                  <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">{t("auth.password", "Password")}</Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder={t("auth.enterPassword", "Enter your password")}
                     value={formData.password}
                     onChange={handleInputChange("password")}
                     autoComplete="new-password"
@@ -152,7 +154,7 @@ export default function Register() {
                 disabled={isSubmitting}
                 isLoading={isSubmitting}
               >
-                Create account
+                {t("auth.createAccount", "Create account")}
               </Button>
             </form>
 

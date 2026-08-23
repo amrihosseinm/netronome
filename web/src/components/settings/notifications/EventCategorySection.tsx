@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { 
   ChevronRightIcon,
   RocketLaunchIcon,
@@ -47,6 +48,7 @@ export const EventCategorySection: React.FC<EventCategorySectionProps> = ({
   getRuleState,
   onUpdateRule,
 }) => {
+  const { t } = useTranslation();
 
   const categoryTitle = category.charAt(0).toUpperCase() + category.slice(1);
   
@@ -91,18 +93,18 @@ export const EventCategorySection: React.FC<EventCategorySectionProps> = ({
             <div className="flex-shrink-0">
               {getCategoryIcon()}
             </div>
-            <div className="text-left">
+            <div className="text-start">
               <h5 className="font-semibold text-gray-900 dark:text-white">
                 {categoryTitle}
               </h5>
               <p className="text-xs text-gray-600 dark:text-gray-400">
                 {enabledCount > 0 ? (
                   <span className="font-medium text-emerald-600 dark:text-emerald-400">
-                    {enabledCount} of {events.length} rules enabled
+                    {t("settings.notifications.eventCategory.rulesEnabledCount", "{{enabled}} of {{total}} rules enabled", { enabled: enabledCount, total: events.length })}
                   </span>
                 ) : (
                   <span>
-                    {events.length} {events.length === 1 ? "event" : "events"} available
+                    {t("settings.notifications.eventCategory.eventsAvailable", "{{count}} event(s) available", { count: events.length })}
                   </span>
                 )}
               </p>

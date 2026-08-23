@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   Select,
   SelectContent,
@@ -16,6 +17,7 @@ import { Input } from "@/components/ui/input";
 interface ServerTypeOption {
   value: string;
   label: string;
+  labelKey?: string;
 }
 
 interface ServerFiltersProps {
@@ -35,13 +37,19 @@ export const ServerFilters: React.FC<ServerFiltersProps> = ({
   onFilterTypeChange,
   disabled = false,
 }) => {
+  const { t } = useTranslation();
+  const resolveLabel = (option: ServerTypeOption) =>
+    option.labelKey ? t(option.labelKey, option.label) : option.label;
+  const selectedType = serverTypeOptions.find(
+    (type) => type.value === filterType
+  );
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-4">
       {/* Search Input */}
       <div className="flex-1">
         <Input
           type="text"
-          placeholder="Search servers..."
+          placeholder={t("traceroute.searchServers", "Search servers...")}
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           disabled={disabled}
@@ -56,14 +64,15 @@ export const ServerFilters: React.FC<ServerFiltersProps> = ({
       >
         <SelectTrigger className="min-w-[160px]">
           <SelectValue>
-            {serverTypeOptions.find((type) => type.value === filterType)
-              ?.label || "All Types"}
+            {selectedType
+              ? resolveLabel(selectedType)
+              : t("traceroute.allTypes", "All Types")}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {serverTypeOptions.map((type) => (
             <SelectItem key={type.value} value={type.value}>
-              {type.label}
+              {resolveLabel(type)}
             </SelectItem>
           ))}
         </SelectContent>

@@ -4,13 +4,19 @@
  */
 
 import React, { useState, useMemo, useEffect } from "react";
-import { motion } from "motion/react";
-import { SavedIperfServer, Server } from "@/types/types";
+import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { ArrowPathIcon } from "@heroicons/react/24/outline";
+import { SavedIperfServer, Server, TestProgress as TestProgressType } from "@/types/types";
+import { getServers } from "@/api/speedtest";
+import { SpeedGauge } from "./SpeedGauge";
 import {
   ChevronDownIcon,
   XMarkIcon,
 } from "@heroicons/react/20/solid";
 import { IperfServerModal } from "./IperfServerModal";
+import { PersianTooltip } from "@/components/common/PersianTooltip";
 import { getApiUrl } from "@/utils/baseUrl";
 import { showToast } from "@/components/common/Toast";
 import {
@@ -49,6 +55,10 @@ interface ServerListProps {
   onTestTypeChange: (testType: "speedtest" | "iperf" | "librespeed") => void;
   isServersLoading?: boolean;
   isServersError?: boolean;
+  /** Live test progress to show inline next to the Run button */
+  progress?: TestProgressType | null;
+  /** Nested "Advanced" section rendered inside the collapsible (e.g. Schedule Manager) */
+  advancedContent?: React.ReactNode;
 }
 
 export const ServerList: React.FC<ServerListProps> = ({
@@ -63,6 +73,8 @@ export const ServerList: React.FC<ServerListProps> = ({
   onTestTypeChange,
   isServersLoading,
   isServersError,
+  progress,
+  advancedContent,
 }) => {
   const getInitialDisplayCount = () => {
     if (typeof window !== "undefined") {
@@ -94,12 +106,42 @@ export const ServerList: React.FC<ServerListProps> = ({
     const saved = localStorage.getItem("server-list-open");
     return saved === null ? true : saved === "true";
   });
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(() => {
+    const saved = localStorage.getItem("advanced-schedule-open");
+    return saved === "true";
+  });
+  const [isRefreshingServers, setIsRefreshingServers] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Force a fresh server list from the backend (bypasses its cache), e.g.
+  // after switching VPN location / public IP.
+  const handleRefreshServers = async () => {
+    if (isRefreshingServers) return;
+    setIsRefreshingServers(true);
+    try {
+      const fresh = await getServers(testType, true);
+      queryClient.setQueryData(["servers", testType], fresh);
+      showToast(t("speedtest.serverList.serversRefreshed", "Server list refreshed"), "success");
+    } catch (err) {
+      showToast(t("speedtest.serverList.refreshFailed", "Failed to refresh server list"), "error", {
+        description: err instanceof Error ? err.message : undefined,
+      });
+    } finally {
+      setIsRefreshingServers(false);
+    }
+  };
   const { settings: distanceSettings } = useDistanceSettings();
+  const { t } = useTranslation();
 
   // Persist server list open state to localStorage
   useEffect(() => {
     localStorage.setItem("server-list-open", isOpen.toString());
   }, [isOpen]);
+
+  // Persist advanced (schedule) section open state to localStorage
+  useEffect(() => {
+    localStorage.setItem("advanced-schedule-open", isAdvancedOpen.toString());
+  }, [isAdvancedOpen]);
 
   // Handle window resize for responsive display counts
   useEffect(() => {
@@ -138,11 +180,11 @@ export const ServerList: React.FC<ServerListProps> = ({
   const handleAddCustomServer = () => {
     const id = customServerId.trim();
     if (!/^\d+$/.test(id)) {
-      showToast("Enter a numeric server ID", "error");
+      showToast(t("speedtest.serverList.enterNumericServerId", "Enter a numeric server ID"), "error");
       return;
     }
     if (selectedServers.some((s) => s.id === id)) {
-      showToast("Server already added", "warning");
+      showToast(t("speedtest.serverList.serverAlreadyAdded", "Server already added"), "warning");
       return;
     }
     // Prefer the real server if it's in the fetched list, so display data is correct
@@ -150,12 +192,12 @@ export const ServerList: React.FC<ServerListProps> = ({
     handleServerSelect(
       existing ?? {
         id,
-        name: `Server ${id}`,
+        name: t("speedtest.serverList.customServerName", "Server {{id}}", { id }),
         host: `speedtest.net server ${id}`,
-        location: "Custom",
+        location: t("speedtest.serverList.custom", "Custom"),
         distance: 0,
-        country: "Custom",
-        sponsor: "Custom ID",
+        country: t("speedtest.serverList.custom", "Custom"),
+        sponsor: t("speedtest.serverList.customId", "Custom ID"),
         latitude: 0,
         longitude: 0,
         isIperf: false,
@@ -192,7 +234,7 @@ export const ServerList: React.FC<ServerListProps> = ({
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(
-        errorData.message || "Failed to fetch saved iperf servers"
+        errorData.message || t("speedtest.serverList.failedToFetchSavedIperfServers", "Failed to fetch saved iperf servers")
       );
     }
     const data = await response.json();
@@ -211,16 +253,16 @@ export const ServerList: React.FC<ServerListProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to save iperf server");
+        throw new Error(errorData.message || t("speedtest.serverList.failedToSaveIperfServer", "Failed to save iperf server"));
       }
 
       // Refresh the list of saved servers
       await fetchSavedIperfServers();
-      showToast(`Server "${name}" added successfully`, "success");
+      showToast(t("speedtest.serverList.serverAddedSuccess", 'Server "{{name}}" added successfully', { name }), "success");
     } catch (error) {
       console.error("Failed to save server:", error);
       showToast(
-        error instanceof Error ? error.message : "Failed to save iperf server",
+        error instanceof Error ? error.message : t("speedtest.serverList.failedToSaveIperfServer", "Failed to save iperf server"),
         "error"
       );
     }
@@ -234,16 +276,16 @@ export const ServerList: React.FC<ServerListProps> = ({
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Failed to delete iperf server");
+        throw new Error(errorData.message || t("speedtest.serverList.failedToDeleteIperfServer", "Failed to delete iperf server"));
       }
 
       // Refresh the list of saved servers
       await fetchSavedIperfServers();
-      showToast("Server deleted successfully", "success");
+      showToast(t("speedtest.serverList.serverDeletedSuccess", "Server deleted successfully"), "success");
     } catch (error) {
       console.error("Failed to delete server:", error);
       showToast(
-        error instanceof Error ? error.message : "Failed to delete iperf server",
+        error instanceof Error ? error.message : t("speedtest.serverList.failedToDeleteIperfServer", "Failed to delete iperf server"),
         "error"
       );
     }
@@ -254,8 +296,8 @@ export const ServerList: React.FC<ServerListProps> = ({
     if (testType === "iperf") {
       fetchSavedIperfServers().catch((error) => {
         console.error("Failed to fetch iperf servers:", error);
-        showToast("Failed to load iperf servers", "error", {
-          description: error instanceof Error ? error.message : "Unknown error",
+        showToast(t("speedtest.serverList.failedToLoadIperfServers", "Failed to load iperf servers"), "error", {
+          description: error instanceof Error ? error.message : t("speedtest.serverList.unknownError", "Unknown error"),
         });
       });
     }
@@ -291,14 +333,15 @@ export const ServerList: React.FC<ServerListProps> = ({
             isOpen ? "rounded-t-xl" : "rounded-xl"
           } shadow-lg border border-gray-200 dark:border-gray-800 ${
             isOpen ? "border-b-0" : ""
-          } text-left`}
+          } text-start`}
         >
           <div className="flex flex-col">
-            <h2 className="text-gray-900 dark:text-white text-xl font-semibold p-1 select-none">
-              Server Selection
+            <h2 className="text-gray-900 dark:text-white text-xl font-semibold p-1 select-none flex items-center gap-2">
+              {t("speedtest.serverList.title", "Server Selection")}
+              <PersianTooltip text="انتخاب سرور تست سرعت. سروری که از نظر فاصله نزدیک‌تر است را انتخاب کنید تا نتیجه تست دقیق‌تر باشد." />
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 text-sm pl-1 pb-1">
-              Choose between speedtest.net, iperf3 or librespeed servers
+            <p className="text-gray-600 dark:text-gray-400 text-sm ps-1 pb-1">
+              {t("speedtest.serverList.description", "Choose between speedtest.net, iperf3 or librespeed servers")}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -312,7 +355,7 @@ export const ServerList: React.FC<ServerListProps> = ({
 
         <CollapsibleContent>
           <div className="bg-gray-50/95 dark:bg-gray-850/95 px-4 pt-2 rounded-b-xl shadow-lg flex-1 border border-t-0 border-gray-200 dark:border-gray-800">
-                <div className="flex flex-col pl-1"></div>
+                <div className="flex flex-col ps-1"></div>
                 <motion.div
                   className="mt-1 px-1 select-none pointer-events-none server-list-animate pb-4"
                   initial={{ opacity: 0, y: -20 }}
@@ -336,56 +379,95 @@ export const ServerList: React.FC<ServerListProps> = ({
                   }}
                 >
                   {/* Controls Header */}
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
-                    <div className="flex items-center gap-6">
-                      {/* Multi-select Toggle */}
-                      {/* TODO: backend needs some work for multiple server tests
-                      <Field
-                        className={`flex items-center gap-3 transition-opacity duration-200 ${
-                          useIperf
-                            ? "opacity-30 pointer-events-none"
-                            : "opacity-100"
-                        }`}
-                      >
-                        <Label className="text-sm text-gray-400">
-                          Multi-select
-                        </Label>
-                        <Switch
-                          checked={multiSelect}
-                          onChange={onMultiSelectChange}
-                          className={`${
-                            multiSelect ? "bg-blue-500" : "bg-gray-700"
-                          } relative inline-flex h-6 w-11 items-center rounded-full`}
-                        >
-                          <span
-                            className={`${
-                              multiSelect ? "translate-x-6" : "translate-x-1"
-                            } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
-                          />
-                        </Switch>
-                      </Field>
-                      */}
-
+                  <div className="flex flex-col gap-4 mb-4">
+                    {/* Row 1: Test type + Run Button (+ inline gauge when running) */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       {/* Test Type Radio Group */}
                       <RadioGroup
                         value={testType}
                         onValueChange={(value) => handleTestTypeChange(value as "speedtest" | "iperf" | "librespeed")}
                         className="flex items-center gap-2 sm:gap-4"
                       >
-                        <RadioOption value="speedtest">Speedtest</RadioOption>
+                        <RadioOption value="speedtest">{t("speedtest.serverList.testTypeSpeedtest", "Speedtest")}</RadioOption>
                         <RadioOption value="iperf">iperf3</RadioOption>
-                        <RadioOption value="librespeed">Librespeed</RadioOption>
+                        <RadioOption value="librespeed">{t("speedtest.serverList.testTypeLibrespeed", "Librespeed")}</RadioOption>
                       </RadioGroup>
-                    </div>
 
-                    {/* Run Test Button */}
-                    <Button
-                      onClick={onRunTest}
-                      disabled={isLoading || selectedServers.length === 0}
-                      className="w-full sm:w-auto"
-                    >
-                      Run
-                    </Button>
+                      {/* Run Button + Inline Progress Side by Side */}
+                      <div className="flex items-center gap-4">
+                        {/* Inline Speed Gauge - appears next to Run button while testing */}
+                        <AnimatePresence mode="wait">
+                          {isLoading && progress && (
+                            progress.type === "download" || progress.type === "upload"
+                              ? (
+                                <motion.div
+                                  key="inline-gauge"
+                                  initial={{ opacity: 0, scale: 0.8, width: 0 }}
+                                  animate={{ opacity: 1, scale: 1, width: "auto" }}
+                                  exit={{ opacity: 0, scale: 0.8, width: 0 }}
+                                  transition={{ duration: 0.3, ease: "easeOut" }}
+                                  className="flex items-center gap-3 overflow-hidden"
+                                >
+                                  <SpeedGauge
+                                    value={progress.currentSpeed}
+                                    label={
+                                      progress.type === "upload"
+                                        ? t("speedtest.gauge.upload", "Upload")
+                                        : t("speedtest.gauge.download", "Download")
+                                    }
+                                    variant={progress.type === "upload" ? "upload" : "download"}
+                                    progress={progress.progress}
+                                    size={110}
+                                  />
+                                  {progress.currentServer && (
+                                    <div className="max-w-[180px] hidden sm:block">
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 leading-tight">
+                                        {progress.currentServer}
+                                      </span>
+                                    </div>
+                                  )}
+                                </motion.div>
+                              )
+                              : (
+                                <motion.div
+                                  key="inline-status"
+                                  initial={{ opacity: 0 }}
+                                  animate={{ opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400"
+                                >
+                                  <div className="flex gap-1">
+                                    {[0, 1, 2].map((i) => (
+                                      <motion.div
+                                        key={i}
+                                        className="w-1.5 h-1.5 bg-blue-500 rounded-full"
+                                        animate={{ opacity: [0.3, 1, 0.3] }}
+                                        transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="whitespace-nowrap font-medium">
+                                    {progress?.isLibrespeed
+                                      ? t("speedtest.runningLibreSpeed", "Running LibreSpeed...")
+                                      : t("speedtest.preparingTest", "Preparing test...")}
+                                  </span>
+                                </motion.div>
+                              )
+                          )}
+                        </AnimatePresence>
+
+                        {/* Run Test Button */}
+                        <Button
+                          onClick={onRunTest}
+                          disabled={isLoading || selectedServers.length === 0}
+                          className="w-full sm:w-auto shrink-0"
+                        >
+                          {isLoading
+                            ? t("speedtest.serverList.running", "Running...")
+                            : t("speedtest.serverList.run", "Run")}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
 
                   {testType === "iperf" && (
@@ -396,7 +478,7 @@ export const ServerList: React.FC<ServerListProps> = ({
                           <div className="flex-1">
                             <Input
                               type="text"
-                              placeholder="Search saved servers..."
+                              placeholder={t("speedtest.serverList.searchSavedServers", "Search saved servers...")}
                               value={iperfSearchTerm}
                               onChange={(e) =>
                                 setIperfSearchTerm(e.target.value)
@@ -406,10 +488,8 @@ export const ServerList: React.FC<ServerListProps> = ({
                           <button
                             onClick={() => setAddServerModalOpen(true)}
                             className="px-3 py-2 bg-gray-100 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg transition-colors border border-gray-300 dark:border-gray-900 hover:border-gray-400 dark:hover:border-gray-700 shadow-md text-sm"
-                            title="Add new iperf3 server"
-                          >
-                            + Add
-                          </button>
+                            title={t("speedtest.serverList.addNewIperfServer", "Add new iperf3 server")}
+                          >+ {t("common.add", "Add")}</button>
                         </div>
                       </div>
                     </div>
@@ -418,14 +498,27 @@ export const ServerList: React.FC<ServerListProps> = ({
                   {/* Server Search and Filter Controls */}
                   {(testType === "speedtest" || testType === "librespeed") && (
                     <div className="flex flex-col md:flex-row gap-4 mb-4">
-                      {/* Search Input */}
-                      <div className="flex-1">
-                        <Input
-                          type="text"
-                          placeholder="Search servers..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                        />
+                      {/* Search Input + Refresh */}
+                      <div className="flex-1 flex gap-2">
+                        <div className="flex-1">
+                          <Input
+                            type="text"
+                            placeholder={t("speedtest.searchServers", "Search servers...")}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                          />
+                        </div>
+                        <button
+                          onClick={handleRefreshServers}
+                          disabled={isRefreshingServers}
+                          title={t("speedtest.serverList.refreshServers", "Refresh server list")}
+                          aria-label={t("speedtest.serverList.refreshServers", "Refresh server list")}
+                          className="px-3 py-2 bg-gray-100 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg transition-colors border border-gray-300 dark:border-gray-900 hover:border-gray-400 dark:hover:border-gray-700 shadow-md disabled:opacity-50 flex items-center justify-center"
+                        >
+                          <ArrowPathIcon
+                            className={`w-4 h-4 ${isRefreshingServers ? "animate-spin" : ""}`}
+                          />
+                        </button>
                       </div>
 
                       {/* Country Filter */}
@@ -434,12 +527,10 @@ export const ServerList: React.FC<ServerListProps> = ({
                         onValueChange={(value) => setFilterCountry(value === "all-countries" ? "" : value)}
                       >
                         <SelectTrigger className="min-w-[160px]">
-                          <SelectValue placeholder="All Countries" />
+                          <SelectValue placeholder={t("speedtest.allCountries", "All Countries")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all-countries">
-                            All Countries
-                          </SelectItem>
+                          <SelectItem value="all-countries">{t("speedtest.allCountries", "All Countries")}</SelectItem>
                           {countries.map((country) => (
                             <SelectItem key={country} value={country}>
                               {country}
@@ -457,7 +548,7 @@ export const ServerList: React.FC<ServerListProps> = ({
                         <Input
                           type="text"
                           inputMode="numeric"
-                          placeholder="Server ID"
+                          placeholder={t("speedtest.serverId", "Server ID")}
                           value={customServerId}
                           onChange={(e) => setCustomServerId(e.target.value)}
                           onKeyDown={(e) => {
@@ -471,10 +562,8 @@ export const ServerList: React.FC<ServerListProps> = ({
                       <button
                         onClick={handleAddCustomServer}
                         className="px-3 py-2 bg-gray-100 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-300 rounded-lg transition-colors border border-gray-300 dark:border-gray-900 hover:border-gray-400 dark:hover:border-gray-700 shadow-md text-sm"
-                        title="Add speedtest.net server by ID"
-                      >
-                        + Add
-                      </button>
+                        title={t("speedtest.serverList.addServerByIdTitle", "Add speedtest.net server by ID")}
+                      >+ {t("common.add", "Add")}</button>
                     </div>
                   )}
 
@@ -489,13 +578,13 @@ export const ServerList: React.FC<ServerListProps> = ({
                           .map((s) => (
                             <div
                               key={s.id}
-                              className="flex items-center gap-2 pl-3 pr-1.5 py-1 rounded-lg text-sm bg-blue-100/50 dark:bg-blue-500/10 border border-blue-400/50 text-blue-700 dark:text-blue-300"
+                              className="flex items-center gap-2 ps-3 pe-1.5 py-1 rounded-lg text-sm bg-blue-100/50 dark:bg-blue-500/10 border border-blue-400/50 text-blue-700 dark:text-blue-300"
                             >
-                              <span>Server {s.id} (custom)</span>
+                              <span>{t("speedtest.serverList.customServerLabel", "Server {{id}} (custom)", { id: s.id })}</span>
                               <button
                                 onClick={() => handleServerSelect(s)}
                                 className="p-0.5 rounded hover:bg-blue-200/50 dark:hover:bg-blue-500/20 transition-colors"
-                                title="Remove server"
+                                title={t("speedtest.serverList.removeServer", "Remove server")}
                               >
                                 <XMarkIcon className="h-4 w-4" />
                               </button>
@@ -512,12 +601,10 @@ export const ServerList: React.FC<ServerListProps> = ({
                           <div className="text-center max-w-md">
                             <div className="text-gray-600 dark:text-gray-400 text-lg mb-2">🔧</div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-300 mb-2">
-                              No iperf3 servers found
+                              {t("speedtest.serverList.noIperfServersFound", "No iperf3 servers found")}
                             </h3>
                             <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                              Add your first iperf3 server using the input
-                              above. Enter the server address and port (e.g.,
-                              iperf.example.com:5201)
+                              {t("speedtest.serverList.addFirstIperfServer", "Add your first iperf3 server using the input above. Enter the server address and port (e.g., iperf.example.com:5201)")}
                             </p>
                           </div>
                         </div>
@@ -530,9 +617,9 @@ export const ServerList: React.FC<ServerListProps> = ({
                                 id: `iperf3-${server.host}:${server.port}`,
                                 name: server.name,
                                 host: `${server.host}:${server.port}`,
-                                location: "Saved",
+                                location: t("speedtest.serverList.saved", "Saved"),
                                 distance: 0,
-                                country: "Saved",
+                                country: t("speedtest.serverList.saved", "Saved"),
                                 sponsor: "iperf3",
                                 latitude: 0,
                                 longitude: 0,
@@ -549,7 +636,7 @@ export const ServerList: React.FC<ServerListProps> = ({
                                     onClick={() =>
                                       handleServerSelect(iperfServer)
                                     }
-                                    className={`w-full p-4 rounded-lg text-left transition-colors relative cursor-pointer ${
+                                    className={`w-full p-4 rounded-lg text-start transition-colors relative cursor-pointer ${
                                       selectedServers.some(
                                         (s) => s.id === iperfServer.id
                                       )
@@ -557,21 +644,22 @@ export const ServerList: React.FC<ServerListProps> = ({
                                         : "bg-gray-100/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-900 hover:bg-gray-200/50 dark:hover:bg-gray-800 shadow-lg"
                                     } border`}
                                   >
-                                    <div className="flex flex-col gap-1 pr-8">
+                                    <div className="flex flex-col gap-1 pe-8">
                                       <span className="text-blue-600 dark:text-blue-300 font-medium truncate">
                                         {server.name}
                                       </span>
                                       <span className="text-gray-600 dark:text-gray-400 text-sm">
-                                        iperf3 Server
+                                        {t("speedtest.serverList.iperfServerLabel", "iperf3 Server")}
                                         <span
                                           className="block truncate text-xs text-gray-500 dark:text-gray-500"
                                           title={`${server.host}:${server.port}`}
+                                          dir="ltr"
                                         >
                                           {server.host}:{server.port}
                                         </span>
                                       </span>
                                       <span className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                                        Custom Server
+                                        {t("speedtest.serverList.customServer", "Custom Server")}
                                       </span>
                                     </div>
                                     <button
@@ -581,7 +669,7 @@ export const ServerList: React.FC<ServerListProps> = ({
                                         setDeleteModalOpen(true);
                                       }}
                                       className="absolute top-2 right-2 text-gray-600 dark:text-gray-400 p-1 bg-gray-200/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-900 rounded-md hover:bg-red-100/50 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-                                      title="Delete server"
+                                      title={t("speedtest.serverList.deleteServer", "Delete server")}
                                     >
                                       <XMarkIcon className="h-4 w-4" />
                                     </button>
@@ -601,7 +689,7 @@ export const ServerList: React.FC<ServerListProps> = ({
                             }
                             className="px-4 py-2 bg-gray-200/30 dark:bg-gray-800/30 border border-gray-300/50 dark:border-gray-900/50 text-gray-600/50 dark:text-gray-300/50 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-300/50 dark:hover:bg-gray-800/50 transition-colors"
                           >
-                            Load More
+                            {t("speedtest.serverList.loadMore", "Load More")}
                           </button>
                         </div>
                       )}
@@ -615,28 +703,28 @@ export const ServerList: React.FC<ServerListProps> = ({
                             {isServersLoading ? (
                               <>
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-300 mb-2">
-                                  Loading LibreSpeed servers...
+                                  {t("speedtest.serverList.loadingLibrespeedServers", "Loading LibreSpeed servers...")}
                                 </h3>
                                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                  Fetching public servers from LibreSpeed.org.
+                                  {t("speedtest.serverList.fetchingPublicServers", "Fetching public servers from LibreSpeed.org.")}
                                 </p>
                               </>
                             ) : isServersError ? (
                               <>
                                 <h3 className="text-lg font-medium text-red-600 dark:text-red-400 mb-2">
-                                  Failed to load servers
+                                  {t("speedtest.failedToLoad", "Failed to load servers")}
                                 </h3>
                                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                  Could not fetch LibreSpeed servers. Check your network connection or add custom servers via librespeed-servers.json.
+                                  {t("speedtest.serverList.couldNotFetchLibrespeed", "Could not fetch LibreSpeed servers. Check your network connection or add custom servers via librespeed-servers.json.")}
                                 </p>
                               </>
                             ) : (
                               <>
                                 <h3 className="text-lg font-medium text-gray-900 dark:text-gray-300 mb-2">
-                                  No LibreSpeed servers found
+                                  {t("speedtest.serverList.noLibrespeedServersFound", "No LibreSpeed servers found")}
                                 </h3>
                                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                                  No servers matched your search. Try adjusting your filters or add custom servers via librespeed-servers.json.
+                                  {t("speedtest.serverList.noServersMatchedSearch", "No servers matched your search. Try adjusting your filters or add custom servers via librespeed-servers.json.")}
                                 </p>
                               </>
                             )}
@@ -655,7 +743,7 @@ export const ServerList: React.FC<ServerListProps> = ({
                                 >
                                   <button
                                     onClick={() => handleServerSelect(server)}
-                                    className={`w-full p-4 rounded-lg text-left transition-colors ${
+                                    className={`w-full p-4 rounded-lg text-start transition-colors ${
                                       selectedServers.some(
                                         (s) => s.id === server.id
                                       )
@@ -676,7 +764,7 @@ export const ServerList: React.FC<ServerListProps> = ({
                                                 : "bg-purple-500/10 text-purple-600 dark:text-purple-400"
                                             }`}
                                           >
-                                            {server.isPublic ? "Public" : "Custom"}
+                                            {server.isPublic ? t("speedtest.serverList.public", "Public") : t("speedtest.serverList.custom", "Custom")}
                                           </span>
                                         )}
                                       </div>
@@ -710,10 +798,41 @@ export const ServerList: React.FC<ServerListProps> = ({
                           onClick={() => setDisplayCount((prev) => prev + 6)}
                           className="px-4 py-2 bg-gray-200/30 dark:bg-gray-800/30 border border-gray-300/50 dark:border-gray-900/50 text-gray-600/50 dark:text-gray-300/50 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg hover:bg-gray-300/50 dark:hover:bg-gray-800/50 transition-colors"
                         >
-                          Load More
+                          {t("speedtest.serverList.loadMore", "Load More")}
                         </button>
                       </div>
                     )}
+
+                  {/* Advanced: nested automation section (Schedule Manager) */}
+                  {advancedContent && (
+                    <div className="mt-6 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-100/50 dark:bg-gray-900/40 overflow-hidden">
+                      <button
+                        type="button"
+                        onClick={() => setIsAdvancedOpen((prev) => !prev)}
+                        className="flex justify-between items-center w-full px-4 py-2.5 text-start cursor-pointer"
+                      >
+                        <span className="flex flex-col">
+                          <span className="text-gray-900 dark:text-white text-base font-semibold select-none flex items-center gap-2">
+                            {t("speedtest.serverList.advancedSchedule", "Advanced: Schedule Manager")}
+                            <PersianTooltip text="اجرای خودکار تست‌های سرعت در بازه‌های زمانی مشخص یا زمان‌های دقیق." />
+                          </span>
+                          <span className="text-gray-600 dark:text-gray-400 text-xs select-none">
+                            {t("speedtest.serverList.advancedScheduleDescription", "Automate tests at regular intervals or specific times")}
+                          </span>
+                        </span>
+                        <ChevronDownIcon
+                          className={`${
+                            isAdvancedOpen ? "transform rotate-180" : ""
+                          } w-5 h-5 flex-shrink-0 text-gray-600 dark:text-gray-400 transition-transform duration-200`}
+                        />
+                      </button>
+                      {isAdvancedOpen && (
+                        <div className="px-4 pb-4 border-t border-gray-200 dark:border-gray-800">
+                          {advancedContent}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
           </div>
         </CollapsibleContent>
@@ -728,9 +847,9 @@ export const ServerList: React.FC<ServerListProps> = ({
                   deleteSavedServer(serverToDelete);
                 }
               }}
-              title="Delete Server"
-              message="Are you sure you want to delete this server? This action cannot be undone."
-              confirmText="Delete"
+              title={t("speedtest.serverList.deleteServerTitle", "Delete Server")}
+              message={t("speedtest.serverList.deleteServerMessage", "Are you sure you want to delete this server? This action cannot be undone.")}
+              confirmText={t("common.delete", "Delete")}
               confirmStyle="danger"
             />
 
@@ -749,9 +868,9 @@ export const ServerList: React.FC<ServerListProps> = ({
                   );
                 }
               }}
-              title="Save Server"
-              message="Enter a name for this iperf server"
-              confirmText="Save"
+              title={t("speedtest.serverList.saveServerTitle", "Save Server")}
+              message={t("speedtest.serverList.saveServerMessage", "Enter a name for this iperf server")}
+              confirmText={t("common.save", "Save")}
               serverDetails={newServerDetails}
             />
 
@@ -793,6 +912,7 @@ const AddServerModal: React.FC<AddServerModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  const { t } = useTranslation();
   const [serverName, setServerName] = useState("");
   const [serverHost, setServerHost] = useState("");
   const [serverPort, setServerPort] = useState("5201");
@@ -815,26 +935,26 @@ const AddServerModal: React.FC<AddServerModalProps> = ({
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="w-full max-w-md">
         <DialogHeader>
-          <DialogTitle>Add iperf3 Server</DialogTitle>
+          <DialogTitle>{t("speedtest.serverList.addIperfServerTitle", "Add iperf3 Server")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="serverName">
-              Server Name
+              {t("speedtest.serverName", "Server Name")}
             </Label>
             <Input
               type="text"
               id="serverName"
               value={serverName}
               onChange={(e) => setServerName(e.target.value)}
-              placeholder="Enter a name for this server"
+              placeholder={t("speedtest.iperfServerModal.namePlaceholder", "Enter a name for this server")}
               autoFocus
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="serverHost">
-              Server Host
+              {t("speedtest.serverHost", "Server Host")}
             </Label>
             <Input
               type="text"
@@ -846,7 +966,7 @@ const AddServerModal: React.FC<AddServerModalProps> = ({
           </div>
           <div className="space-y-2">
             <Label htmlFor="serverPort">
-              Server Port
+              {t("speedtest.serverPort", "Server Port")}
             </Label>
             <Input
               type="number"
@@ -864,14 +984,14 @@ const AddServerModal: React.FC<AddServerModalProps> = ({
             variant="ghost"
             onClick={handleClose}
           >
-            Cancel
+            {t("common.cancel", "Cancel")}
           </Button>
           <Button
             type="button"
             disabled={!serverName.trim() || !serverHost.trim()}
             onClick={handleConfirm}
           >
-            Add Server
+            {t("speedtest.addServer", "Add Server")}
           </Button>
         </div>
       </DialogContent>

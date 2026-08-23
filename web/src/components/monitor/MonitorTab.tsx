@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MonitorAgentList } from "./MonitorAgentList";
@@ -11,6 +12,7 @@ import { MonitorAgentForm } from "./MonitorAgentForm";
 import { MonitorAgentDetailsTabs } from "./MonitorAgentDetailsTabs";
 import { MonitorDataPrefetcher } from "./MonitorDataPrefetcher";
 import { showToast } from "@/components/common/Toast";
+import { GuideSection } from "@/components/irantools/GuideSection";
 import {
   ArrowLeftIcon,
   PencilIcon,
@@ -31,6 +33,7 @@ import {
 import { MONITOR_REFRESH_INTERVALS } from "@/constants/monitorRefreshIntervals";
 
 export const MonitorTab: React.FC = () => {
+  const { t } = useTranslation();
   const [selectedAgent, setSelectedAgent] = useState<MonitorAgent | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<MonitorAgent | null>(null);
@@ -90,13 +93,13 @@ export const MonitorTab: React.FC = () => {
     onSuccess: (newAgent) => {
       queryClient.invalidateQueries({ queryKey: ["monitor-agents"] });
       setIsFormOpen(false);
-      showToast("Agent created", "success", {
-        description: `${newAgent.name} has been added successfully`,
+      showToast(t("monitor.tab.agentCreated", "Agent created"), "success", {
+        description: t("monitor.tab.agentCreatedDescription", "{{name}} has been added successfully", { name: newAgent.name }),
       });
     },
     onError: (error: Error) => {
-      showToast("Failed to create agent", "error", {
-        description: error.message || "Unable to create the monitoring agent",
+      showToast(t("monitor.tab.failedToCreateAgent", "Failed to create agent"), "error", {
+        description: error.message || t("monitor.tab.unableToCreateAgent", "Unable to create the monitoring agent"),
       });
     },
   });
@@ -123,13 +126,13 @@ export const MonitorTab: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["monitor-agents"] });
       setIsFormOpen(false);
       setEditingAgent(null);
-      showToast("Agent updated", "success", {
-        description: "Agent has been updated successfully",
+      showToast(t("monitor.tab.agentUpdated", "Agent updated"), "success", {
+        description: t("monitor.tab.agentUpdatedDescription", "Agent has been updated successfully"),
       });
     },
     onError: (error: Error) => {
-      showToast("Failed to update agent", "error", {
-        description: error.message || "Unable to update the monitoring agent",
+      showToast(t("monitor.tab.failedToUpdateAgent", "Failed to update agent"), "error", {
+        description: error.message || t("monitor.tab.unableToUpdateAgent", "Unable to update the monitoring agent"),
       });
     },
   });
@@ -153,14 +156,14 @@ export const MonitorTab: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ["monitor-agents"] });
       setSelectedAgent(null);
       
-      const deletedAgentName = agentToDelete?.name || "Agent";
-      showToast("Agent deleted", "success", {
-        description: `${deletedAgentName} has been removed`
+      const deletedAgentName = agentToDelete?.name || t("monitor.tab.agent", "Agent");
+      showToast(t("monitor.tab.agentDeleted", "Agent deleted"), "success", {
+        description: t("monitor.tab.agentDeletedDescription", "{{name}} has been removed", { name: deletedAgentName })
       });
     },
     onError: (error: Error) => {
-      showToast("Failed to delete agent", "error", {
-        description: error.message || "Unable to delete the monitoring agent",
+      showToast(t("monitor.tab.failedToDeleteAgent", "Failed to delete agent"), "error", {
+        description: error.message || t("monitor.tab.unableToDeleteAgent", "Unable to delete the monitoring agent"),
       });
     },
   });
@@ -225,11 +228,10 @@ export const MonitorTab: React.FC = () => {
             <div className="space-y-3 sm:space-y-0 sm:flex sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white">
-                  Monitoring
+                  {t("monitor.tab.monitoring", "Monitoring")}
                 </h2>
                 <p className="hidden sm:block mt-1 text-sm text-gray-600 dark:text-gray-400">
-                  Monitor bandwidth and other stats from Netronome agents •
-                  Click an agent to view detailed stats
+                  {t("monitor.tab.description", "Monitor bandwidth and other stats from Netronome agents • Click an agent to view detailed stats")}
                 </p>
               </div>
               <Button
@@ -238,7 +240,7 @@ export const MonitorTab: React.FC = () => {
                 size="default"
                 className="w-full sm:w-auto"
               >
-                Add Agent
+                {t("monitor.tab.addAgent", "Add Agent")}
               </Button>
             </div>
 
@@ -274,13 +276,13 @@ export const MonitorTab: React.FC = () => {
                   className="gap-1.5"
                 >
                   <ArrowLeftIcon className="h-4 w-4" />
-                  <span>Back</span>
+                  <span>{t("monitor.tab.back", "Back")}</span>
                 </Button>
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                   {selectedAgent.name}
                 </h2>
                 {selectedAgent && !selectedAgent.enabled && (
-                  <Badge variant="secondary">Disabled</Badge>
+                  <Badge variant="secondary">{t("monitor.tab.disabled", "Disabled")}</Badge>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -289,20 +291,20 @@ export const MonitorTab: React.FC = () => {
                   variant="secondary"
                   size="sm"
                   className="gap-1.5"
-                  title="Edit agent"
+                  title={t("monitor.tab.editAgentTitle", "Edit agent")}
                 >
                   <PencilIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Edit</span>
+                  <span className="hidden sm:inline">{t("common.edit", "Edit")}</span>
                 </Button>
                 <Button
                   onClick={() => handleDeleteAgent(selectedAgent)}
                   variant="secondary"
                   size="sm"
                   className="gap-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400"
-                  title="Delete agent"
+                  title={t("monitor.tab.deleteAgentTitle", "Delete agent")}
                 >
                   <TrashIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">Delete</span>
+                  <span className="hidden sm:inline">{t("common.delete", "Delete")}</span>
                 </Button>
               </div>
             </div>
@@ -336,6 +338,22 @@ export const MonitorTab: React.FC = () => {
         itemName={agentToDelete?.name || ""}
         isDeleting={deleteMutation.isPending}
       />
+
+      {/* Agent Monitor Guide — only shown on the agent list view */}
+      {!selectedAgent && (
+        <GuideSection title={t("monitor.guide.title", "About Agent Monitor")}>
+          <p>{t("monitor.guide.p1", "The Agent Monitor tab lets you connect to and monitor remote machines running the Netronome agent. Each agent reports live bandwidth, CPU, memory, disk usage, and system information.")}</p>
+          <p>{t("monitor.guide.p2", "Agents are lightweight processes you install on any server or machine you want to monitor. They communicate back to this dashboard over HTTP.")}</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>{t("monitor.guide.li1", "Click 'Add Agent' to register a new agent by entering its URL and optional API key.")}</li>
+            <li>{t("monitor.guide.li2", "The Overview tab shows live bandwidth speed, CPU/memory/disk usage at a glance.")}</li>
+            <li>{t("monitor.guide.li3", "The Bandwidth tab shows historical traffic charts over time.")}</li>
+            <li>{t("monitor.guide.li4", "The System & Hardware tab shows detailed OS, CPU, memory, disk, and temperature information.")}</li>
+            <li>{t("monitor.guide.li5", "You can 'feature' up to 3 agents on the Dashboard for quick monitoring at a glance.")}</li>
+            <li>{t("monitor.guide.li6", "Agents that are offline will show their last known cached data.")}</li>
+          </ul>
+        </GuideSection>
+      )}
     </div>
   );
 };

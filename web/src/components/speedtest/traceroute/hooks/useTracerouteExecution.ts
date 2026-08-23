@@ -4,6 +4,7 @@
  */
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { TracerouteResult, TracerouteUpdate } from "@/types/types";
 import { runTraceroute } from "@/api/speedtest";
 import { extractHostname } from "../utils/tracerouteUtils";
@@ -20,6 +21,7 @@ export const useTracerouteExecution = ({
   onError,
 }: UseTracerouteExecutionProps = {}) => {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const tracerouteMutation = useMutation({
     mutationFn: runTraceroute,
@@ -27,8 +29,8 @@ export const useTracerouteExecution = ({
       // Clear previous results and error state
       queryClient.setQueryData(["traceroute", "results"], null);
       onError?.(null);
-      showToast("Traceroute started", "success", {
-        description: `Tracing route to ${targetHost}`,
+      showToast(t("traceroute.startedToast", "Traceroute started"), "success", {
+        description: t("traceroute.tracingTo", "Tracing route to {{host}}", { host: targetHost }),
       });
 
       // Set initial status
@@ -51,8 +53,11 @@ export const useTracerouteExecution = ({
       queryClient.setQueryData(["traceroute", "results"], data);
       onStatusUpdate?.(null);
       onError?.(null);
-      showToast("Traceroute completed", "success", {
-        description: `Route to ${data.destination} traced successfully (${data.hops.length} hops)`,
+      showToast(t("traceroute.completedToast", "Traceroute completed"), "success", {
+        description: t("traceroute.completedDesc", "Route to {{host}} traced successfully ({{count}} hops)", {
+          host: data.destination,
+          count: data.hops.length,
+        }),
       });
     },
     onError: (error: Error) => {
@@ -60,9 +65,9 @@ export const useTracerouteExecution = ({
       onStatusUpdate?.(null);
       const errorMessage =
         error.message ||
-        "Traceroute failed. Please check the hostname and try again.";
+        t("traceroute.failedDefault", "Traceroute failed. Please check the hostname and try again.");
       onError?.(errorMessage);
-      showToast("Traceroute failed", "error", {
+      showToast(t("traceroute.failedToast", "Traceroute failed"), "error", {
         description: errorMessage,
       });
     },

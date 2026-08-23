@@ -8,15 +8,16 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 
 	"github.com/autobrr/netronome/internal/notifications"
+	"github.com/autobrr/netronome/internal/speedtest"
 	"github.com/autobrr/netronome/internal/types"
 )
-
 
 func (s *Server) handleSpeedTest(c *gin.Context) {
 	var opts types.TestOptions
@@ -46,29 +47,29 @@ func (s *Server) handleSpeedTest(c *gin.Context) {
 		if s.notifier != nil {
 			// Create a failed result for notification
 			failedResult := &notifications.SpeedTestResult{
-				ServerName: "Unknown", // Default server name for failed tests
-				Provider: "speedtest", // Default provider
-				Failed: true,
+				ServerName: "Unknown",   // Default server name for failed tests
+				Provider:   "speedtest", // Default provider
+				Failed:     true,
 			}
-			
+
 			// Try to set server name from options
 			if len(opts.ServerIDs) > 0 {
 				failedResult.ServerName = opts.ServerIDs[0]
 			}
-			
+
 			// Determine provider from test type
 			if opts.UseIperf {
 				failedResult.Provider = "iperf"
 			} else if opts.UseLibrespeed {
 				failedResult.Provider = "librespeed"
 			}
-			
+
 			notifyErr := s.notifier.SendSpeedTestNotification(failedResult)
 			if notifyErr != nil {
 				log.Error().Err(notifyErr).Msg("Failed to send speedtest failure notification")
 			}
 		}
-		
+
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(fmt.Errorf("failed to run speed test: %w", err))
 		return
@@ -108,6 +109,51 @@ func (s *Server) handleSpeedTestHistory(c *gin.Context) {
 
 	c.JSON(http.StatusOK, results)
 }
+func (s *Server) handleSpeedTestHistoryCSV(c *gin.Context) {
+	results, err := s.db.GetAllSpeedTests(c.Request.Context())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to retrieve speed test history for CSV export")
+		c.Status(http.StatusInternalServerError)
+		_ = c.Error(fmt.Errorf("failed to retrieve speed test history: %w", err))
+		return
+	}
+
+	c.Writer.Header().Set("Content-Type", "text/csv")
+	c.Writer.Header().Set("Content-Disposition", "attachment;filename=speedtest_history.csv")
+
+	// Write CSV Header
+	header := "ID,Date,Server,Host,Type,Download_Mbps,Upload_Mbps,Latency_ms,Jitter,Scheduled\n"
+	_, _ = c.Writer.Write([]byte(header))
+
+	for _, r := range results {
+		downloadMbps := float64(r.DownloadSpeed) / 1024 / 1024
+		uploadMbps := float64(r.UploadSpeed) / 1024 / 1024
+
+		serverHost := ""
+		if r.ServerHost != nil {
+			serverHost = strings.ReplaceAll(*r.ServerHost, ",", "")
+		}
+
+		jitter := ""
+		if r.Jitter != nil {
+			jitter = fmt.Sprintf("%v", *r.Jitter)
+		}
+
+		row := fmt.Sprintf("%d,%s,%s,%s,%s,%.2f,%.2f,%s,%s,%t\n",
+			r.ID,
+			r.CreatedAt.Format(time.RFC3339),
+			strings.ReplaceAll(r.ServerName, ",", ""), // Prevent CSV breaking
+			serverHost,
+			r.TestType,
+			downloadMbps,
+			uploadMbps,
+			r.Latency,
+			jitter,
+			r.IsScheduled,
+		)
+		_, _ = c.Writer.Write([]byte(row))
+	}
+}
 
 func (s *Server) handlePublicSpeedTestHistory(c *gin.Context) {
 	timeRange := c.DefaultQuery("timeRange", s.config.Pagination.DefaultTimeRange)
@@ -131,8 +177,15 @@ func (s *Server) handlePublicSpeedTestHistory(c *gin.Context) {
 
 func (s *Server) handleGetServers(c *gin.Context) {
 	testType := c.DefaultQuery("testType", "speedtest")
+	forceRefresh := c.Query("refresh") == "true" || c.Query("refresh") == "1"
 
-	servers, err := s.speedtest.GetServers(testType)
+	var servers []speedtest.ServerResponse
+	var err error
+	if forceRefresh {
+		servers, err = s.speedtest.RefreshServers(testType)
+	} else {
+		servers, err = s.speedtest.GetServers(testType)
+	}
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(fmt.Errorf("failed to get servers: %w", err))
@@ -257,7 +310,7 @@ func (s *Server) handleTraceroute(c *gin.Context) {
 		s.mu.Lock()
 		s.lastTracerouteUpdate.IsComplete = true
 		s.mu.Unlock()
-		
+
 		c.Status(http.StatusInternalServerError)
 		_ = c.Error(fmt.Errorf("failed to run traceroute: %w", err))
 		return

@@ -18,7 +18,7 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: 'auto',
       devOptions: {
-        enabled: true,
+        enabled: false,
         navigateFallback: 'index.html',
         suppressWarnings: true,
         type: 'module'
@@ -147,6 +147,11 @@ export default defineConfig({
     }
   },
   server: {
+    // Bind IPv4 explicitly: on some Windows setups "localhost" resolves to ::1 only,
+    // so browsers hitting 127.0.0.1 get connection refused.
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
     proxy: {
       '/api': {
         target: `http://${apiHost}:${apiPort}`,

@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
 import { SHOUTRRR_SERVICES } from "@/api/notifications";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
   onClick,
   onMouseEnter,
 }) => {
+  const { t } = useTranslation();
   const serviceType = useMemo(() => {
     if (!channel.url) return null;
     const match = channel.url.match(/^(\w+):\/\//);
@@ -52,7 +54,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
         onMouseEnter={onMouseEnter}
       >
         <div className="flex items-start justify-between w-full">
-          <div className="flex-1 min-w-0 text-left">
+          <div className="flex-1 min-w-0 text-start">
             <div className="flex items-center gap-2 mb-1">
               <div
                 className={cn(
@@ -72,7 +74,7 @@ export const ChannelCard: React.FC<ChannelCardProps> = ({
               </h5>
             </div>
             <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-              {serviceInfo?.label || serviceType || "Unknown service"}
+              {serviceInfo?.label || serviceType || t("settings.notifications.unknownService", "Unknown service")}
             </p>
           </div>
           <ChevronRight

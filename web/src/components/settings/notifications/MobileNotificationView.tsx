@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   BellIcon,
   PlusIcon,
@@ -84,6 +85,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
   updateRuleMutation,
   createRuleMutation,
 }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"channels" | "rules">("channels");
 
   return (
@@ -99,7 +101,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
               : "text-gray-600 dark:text-gray-400"
           )}
         >
-          Channels
+          {t("settings.notifications.mobile.channelsTab", "Channels")}
         </button>
         <button
           onClick={() => setActiveTab("rules")}
@@ -111,7 +113,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
           )}
           disabled={!activeChannel}
         >
-          Rules
+          {t("settings.notifications.mobile.rulesTab", "Rules")}
           {hasUnsavedChanges && (
             <div className="absolute top-1 right-1 w-2 h-2 bg-amber-500 rounded-full" />
           )}
@@ -127,7 +129,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
             className="w-full"
           >
             <PlusIcon className="w-4 h-4" />
-            Add New Channel
+            {t("settings.notifications.addNewChannelHeading", "Add New Channel")}
           </Button>
 
           {/* Add Channel Form */}
@@ -135,7 +137,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
             <Card>
               <CardContent className="pt-4">
                 <h5 className="font-medium text-gray-900 dark:text-white mb-3">
-                  Add New Channel
+                  {t("settings.notifications.addNewChannelHeading", "Add New Channel")}
                 </h5>
                 <AddChannelForm
                   onSubmit={(input) => {
@@ -176,7 +178,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                     </div>
                     {activeChannelId === channel.id && (
                       <Badge variant="default" className="text-xs flex-shrink-0">
-                        Active
+                        {t("settings.notifications.mobile.activeBadge", "Active")}
                       </Badge>
                     )}
                   </div>
@@ -186,7 +188,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                         channel.url?.match(/^(\w+):\/\//)?.[1];
                       return serviceType
                         ? `${serviceType}://...`
-                        : "Unknown service";
+                        : t("settings.notifications.unknownService", "Unknown service");
                     })()}
                   </p>
                 </div>
@@ -209,13 +211,17 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                     {!(testingChannelId === channel.id && testChannelMutation.isPending) && (
                       <BellIcon className="w-4 h-4" />
                     )}
-                    Test
+                    {t("settings.notifications.testButton", "Test")}
                   </Button>
                   <Button
                     onClick={() => {
                       if (
                         confirm(
-                          `Are you sure you want to delete "${channel.name}"? This action cannot be undone.`
+                          t(
+                            "settings.notifications.confirmDeleteChannelNamed",
+                            'Are you sure you want to delete "{{name}}"? This action cannot be undone.',
+                            { name: channel.name }
+                          )
                         )
                       ) {
                         deleteChannelMutation.mutate(channel.id);
@@ -247,7 +253,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
               <div className="text-center py-12">
                 <BellIcon className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  No channels configured
+                  {t("settings.notifications.noChannelsConfigured", "No channels configured")}
                 </p>
               </div>
             )}
@@ -265,7 +271,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                       {activeChannel.name}
                     </h5>
                     <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                      Configure notification rules
+                      {t("settings.notifications.mobile.configureRulesDescription", "Configure notification rules")}
                     </p>
                   </div>
                   <Button
@@ -274,7 +280,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                     size="sm"
                     className="h-auto p-0"
                   >
-                    Change
+                    {t("settings.notifications.mobile.changeButton", "Change")}
                   </Button>
                 </div>
               </Card>
@@ -288,7 +294,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                     size="sm"
                     className="flex-1"
                   >
-                    Cancel
+                    {t("common.cancel", "Cancel")}
                   </Button>
                   <Button
                     onClick={saveChanges}
@@ -300,7 +306,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                     className="flex-1"
                     isLoading={updateRuleMutation.isPending || createRuleMutation.isPending}
                   >
-                    Save Changes
+                    {t("common.saveChanges", "Save Changes")}
                   </Button>
                 </div>
               )}
@@ -310,7 +316,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                 <div className="text-center py-8">
                   <div className="w-6 h-6 border-2 border-gray-300 dark:border-gray-700 border-t-blue-500 dark:border-t-blue-400 rounded-full mx-auto mb-3 animate-spin" />
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Loading rules...
+                    {t("settings.notifications.mobile.loadingRules", "Loading rules...")}
                   </p>
                 </div>
               ) : (
@@ -340,11 +346,10 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                   <BellIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Get Started with Notifications
+                  {t("settings.notifications.mobile.emptyTitle", "Get Started with Notifications")}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-                  Create notification channels to receive alerts about system
-                  events and monitoring updates.
+                  {t("settings.notifications.mobile.emptyDescription", "Create notification channels to receive alerts about system events and monitoring updates.")}
                 </p>
                 <Button
                   onClick={() => setActiveTab("channels")}
@@ -352,7 +357,7 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                   size="sm"
                   className="h-auto"
                 >
-                  Go to Channels tab to add your first channel
+                  {t("settings.notifications.mobile.goToChannelsTab", "Go to Channels tab to add your first channel")}
                 </Button>
               </Card>
 
@@ -360,17 +365,17 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                 <CardContent className="p-4">
                   <h4 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                     <InformationCircleIcon className="w-5 h-5 text-gray-500" />
-                    Available Notifications
+                    {t("settings.notifications.availableNotifications.title", "Available Notifications")}
                   </h4>
                   <div className="space-y-3">
                     <div className="flex items-start gap-2">
                       <span className="text-base">🚀</span>
                       <div className="text-sm">
                         <span className="font-medium text-gray-900 dark:text-white">
-                          Speed Tests
+                          {t("settings.notifications.mobile.speedTestsLabel", "Speed Tests")}
                         </span>
                         <p className="text-gray-600 dark:text-gray-400 text-xs">
-                          Test results and failures
+                          {t("settings.notifications.mobile.speedTestsDescription", "Test results and failures")}
                         </p>
                       </div>
                     </div>
@@ -378,10 +383,10 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                       <span className="text-base">📡</span>
                       <div className="text-sm">
                         <span className="font-medium text-gray-900 dark:text-white">
-                          Packet Loss
+                          {t("settings.notifications.mobile.packetLossLabel", "Packet Loss")}
                         </span>
                         <p className="text-gray-600 dark:text-gray-400 text-xs">
-                          Network quality alerts
+                          {t("settings.notifications.mobile.packetLossDescription", "Network quality alerts")}
                         </p>
                       </div>
                     </div>
@@ -389,10 +394,10 @@ export const MobileNotificationView: React.FC<MobileNotificationViewProps> = ({
                       <span className="text-base">🖥️</span>
                       <div className="text-sm">
                         <span className="font-medium text-gray-900 dark:text-white">
-                          Agent Status
+                          {t("settings.notifications.mobile.agentStatusLabel", "Agent Status")}
                         </span>
                         <p className="text-gray-600 dark:text-gray-400 text-xs">
-                          Online/offline & resources
+                          {t("settings.notifications.mobile.agentStatusDescription", "Online/offline & resources")}
                         </p>
                       </div>
                     </div>

@@ -43,6 +43,16 @@ const TAB_COLORS = {
     inactive:
       "text-gray-500 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-300",
   },
+  trippy: {
+    active: "text-cyan-600 dark:text-cyan-400",
+    inactive:
+      "text-gray-500 dark:text-gray-400 hover:text-cyan-500 dark:hover:text-cyan-300",
+  },
+  irantools: {
+    active: "text-teal-600 dark:text-teal-400",
+    inactive:
+      "text-gray-500 dark:text-gray-400 hover:text-teal-500 dark:hover:text-teal-300",
+  },
 } as const;
 
 type TabId = keyof typeof TAB_COLORS;
@@ -125,7 +135,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
         className="w-full sm:w-auto"
       >
         <TabsPrimitive.List
-          className="flex space-x-0.5 sm:space-x-2 bg-gray-100/60 dark:bg-gray-800/20 p-1 sm:p-2 rounded-xl shadow-sm border border-gray-200/60 dark:border-gray-800/80 w-full sm:w-auto overflow-x-auto scrollbar-hide"
+          className="flex space-x-0.5 sm:gap-2 bg-gray-100/60 dark:bg-gray-800/20 p-1 sm:p-2 rounded-xl shadow-sm border border-gray-200/60 dark:border-gray-800/80 w-full sm:w-auto overflow-x-auto scrollbar-hide"
           aria-label="Navigation tabs"
         >
           {tabs.map((tab) => {
@@ -136,6 +146,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
               <TabsPrimitive.Trigger
                 key={tab.id}
                 value={tab.id}
+                data-tour={`tab-${tab.id}`}
                 className={cn(
                   "relative flex-1 sm:flex-none min-w-0 px-2 xs:px-3 sm:px-6 py-2 sm:py-3 rounded-lg text-xs xs:text-sm sm:text-base font-normal transition-all duration-200 whitespace-nowrap",
                   "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 dark:focus-visible:ring-offset-gray-800 focus-visible:ring-blue-500/30",

@@ -47,11 +47,12 @@ const getTestTypeDisplayName = (testType: string) => {
 };
 
 export const getSpeedTestColumns = (
-  settings?: TimeFormatSettings
+  settings?: TimeFormatSettings,
+  t: (key: string, fallback: string) => string = (_key, fallback) => fallback
 ): ColumnDef<SpeedTestResult>[] => [
   {
     accessorKey: "createdAt",
-    header: createSortableHeader("Date"),
+    header: createSortableHeader(t("speedtest.columns.date", "Date")),
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"));
       return (
@@ -64,7 +65,7 @@ export const getSpeedTestColumns = (
   },
   {
     accessorKey: "serverName",
-    header: "Server",
+    header: t("speedtest.columns.server", "Server"),
     cell: ({ row }) => (
       <span
         className="text-gray-700 dark:text-gray-300 truncate block max-w-[180px] font-medium"
@@ -77,7 +78,7 @@ export const getSpeedTestColumns = (
   },
   {
     accessorKey: "testType",
-    header: "Type",
+    header: t("speedtest.columns.type", "Type"),
     cell: ({ row }) => {
       const testType = row.getValue("testType") as string;
       return (
@@ -92,16 +93,16 @@ export const getSpeedTestColumns = (
       );
     },
     meta: {
-      displayName: "Test Type",
+      displayName: t("speedtest.columns.testType", "Test Type"),
     },
   },
   {
     accessorKey: "latency",
-    header: createRightAlignedSortableHeader("Latency"),
+    header: createRightAlignedSortableHeader(t("speedtest.columns.latency", "Latency")),
     cell: ({ row }) => {
       const latency = parseFloat(row.getValue("latency"));
       return (
-        <div className="text-right text-amber-600 dark:text-amber-400 font-mono font-medium">
+        <div className="text-end text-amber-600 dark:text-amber-400 font-mono font-medium">
           {latency.toFixed(1)}ms
         </div>
       );
@@ -109,11 +110,11 @@ export const getSpeedTestColumns = (
   },
   {
     accessorKey: "jitter",
-    header: createRightAlignedSortableHeader("Jitter"),
+    header: createRightAlignedSortableHeader(t("speedtest.columns.jitter", "Jitter")),
     cell: ({ row }) => {
       const jitter = row.getValue("jitter") as number | null;
       return (
-        <div className="text-right text-purple-600 dark:text-purple-400 font-mono font-medium">
+        <div className="text-end text-purple-600 dark:text-purple-400 font-mono font-medium">
           {jitter !== null && jitter !== undefined ? `${jitter.toFixed(1)}ms` : "—"}
         </div>
       );
@@ -121,11 +122,11 @@ export const getSpeedTestColumns = (
   },
   {
     accessorKey: "downloadSpeed",
-    header: createRightAlignedSortableHeader("Download"),
+    header: createRightAlignedSortableHeader(t("speedtest.download", "Download")),
     cell: ({ row }) => {
       const speed = row.getValue("downloadSpeed") as number;
       return (
-        <div className="text-right text-blue-600 dark:text-blue-400 font-mono font-medium">
+        <div className="text-end text-blue-600 dark:text-blue-400 font-mono font-medium">
           {formatSpeed(speed)}
         </div>
       );
@@ -133,11 +134,11 @@ export const getSpeedTestColumns = (
   },
   {
     accessorKey: "uploadSpeed",
-    header: createRightAlignedSortableHeader("Upload"),
+    header: createRightAlignedSortableHeader(t("speedtest.upload", "Upload")),
     cell: ({ row }) => {
       const speed = row.getValue("uploadSpeed") as number;
       return (
-        <div className="text-right text-emerald-600 dark:text-emerald-400 font-mono font-medium">
+        <div className="text-end text-emerald-600 dark:text-emerald-400 font-mono font-medium">
           {formatSpeed(speed)}
         </div>
       );
@@ -147,7 +148,8 @@ export const getSpeedTestColumns = (
 
 // Mobile-friendly columns with fewer fields
 export const getSpeedTestMobileColumns = (
-  settings?: TimeFormatSettings
+  settings?: TimeFormatSettings,
+  t: (key: string, fallback: string) => string = (_key, fallback) => fallback
 ): ColumnDef<SpeedTestResult>[] => [
   {
     id: "summary",
@@ -158,7 +160,7 @@ export const getSpeedTestMobileColumns = (
       return (
         <div className="space-y-2.5">
           <div className="flex items-center justify-between">
-            <div className="text-gray-700 dark:text-gray-300 text-base font-medium truncate flex-1 mr-2">
+            <div className="text-gray-700 dark:text-gray-300 text-base font-medium truncate flex-1 me-2">
               {test.serverName}
             </div>
             <span
@@ -175,27 +177,27 @@ export const getSpeedTestMobileColumns = (
           </div>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Latency:</span>
+              <span className="text-gray-600 dark:text-gray-400">{t("speedtest.columns.latency", "Latency")}:</span>
               <span className="text-amber-600 dark:text-amber-400 font-mono font-semibold">
                 {parseFloat(test.latency).toFixed(1)}ms
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Jitter:</span>
+              <span className="text-gray-600 dark:text-gray-400">{t("speedtest.columns.jitter", "Jitter")}:</span>
               <span className="text-purple-600 dark:text-purple-400 font-mono font-semibold">
                 {test.jitter !== null && test.jitter !== undefined ? `${test.jitter.toFixed(1)}ms` : "—"}
               </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600 dark:text-gray-400">
-                Download:
+                {t("speedtest.download", "Download")}:
               </span>
               <span className="text-blue-600 dark:text-blue-400 font-mono font-semibold">
                 {formatSpeed(test.downloadSpeed)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-400">Upload:</span>
+              <span className="text-gray-600 dark:text-gray-400">{t("speedtest.upload", "Upload")}:</span>
               <span className="text-emerald-600 dark:text-emerald-400 font-mono font-semibold">
                 {formatSpeed(test.uploadSpeed)}
               </span>

@@ -4,6 +4,7 @@
  */
 
 import { type ReactNode, useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { type Schedule, type Server, type SavedIperfServer, type TestType } from "@/types/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSchedules } from "@/api/speedtest";
@@ -42,6 +43,7 @@ import {
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "motion/react";
 import { getApiUrl } from "@/utils/baseUrl";
+import { PersianTooltip } from "@/components/common/PersianTooltip";
 import { formatNextRun } from "@/utils/timeUtils";
 import { Button } from "@/components/ui/Button";
 
@@ -49,6 +51,8 @@ interface ScheduleManagerProps {
   servers: Server[];
   selectedServers: Server[];
   testType: TestType;
+  /** When true, renders only the content without its own card/collapsible header (for nesting) */
+  nested?: boolean;
 }
 
 interface IntervalOption {
@@ -61,15 +65,15 @@ interface TimeOption {
   label: string;
 }
 
-const intervalOptions: IntervalOption[] = [
-  { value: "5m", label: "Every 5 Minutes" },
-  { value: "15m", label: "Every 15 Minutes" },
-  { value: "30m", label: "Every 30 Minutes" },
-  { value: "1h", label: "Every Hour" },
-  { value: "6h", label: "Every 6 Hours" },
-  { value: "12h", label: "Every 12 Hours" },
-  { value: "24h", label: "Every Day" },
-  { value: "7d", label: "Every Week" },
+const getIntervalOptions = (t: (key: string, fallback: string) => string): IntervalOption[] => [
+  { value: "5m", label: t("speedtest.scheduleManager.every5Minutes", "Every 5 Minutes") },
+  { value: "15m", label: t("speedtest.scheduleManager.every15Minutes", "Every 15 Minutes") },
+  { value: "30m", label: t("speedtest.every30Minutes", "Every 30 Minutes") },
+  { value: "1h", label: t("speedtest.scheduleManager.everyHour", "Every Hour") },
+  { value: "6h", label: t("speedtest.every6Hours", "Every 6 Hours") },
+  { value: "12h", label: t("speedtest.every12Hours", "Every 12 Hours") },
+  { value: "24h", label: t("speedtest.scheduleManager.everyDay", "Every Day") },
+  { value: "7d", label: t("speedtest.scheduleManager.everyWeek", "Every Week") },
 ];
 
 const timeOptions: TimeOption[] = [
@@ -182,7 +186,9 @@ const formatExactTimeFromUTC = (time: string): string => {
   return formatTimeWithSettings(candidate);
 };
 
-export default function ScheduleManager({ servers, selectedServers, testType }: ScheduleManagerProps) {
+export default function ScheduleManager({ servers, selectedServers, testType, nested = false }: ScheduleManagerProps) {
+  const { t } = useTranslation();
+  const intervalOptions = getIntervalOptions(t);
   const queryClient = useQueryClient();
   const [iperfServers, setIperfServers] = useState<SavedIperfServer[]>([]);
   const [interval, setInterval] = useState<string>("1h");
@@ -288,18 +294,22 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
       return intervalOptions.find((opt) => opt.value === interval)?.label || interval;
     }
     if (exactTimes.length === 1) {
-      return `Daily at ${timeOptions.find((opt) => opt.value === exactTimes[0])?.label}`;
+      return `${t("speedtest.dailyAt", "Daily at")} ${timeOptions.find((opt) => opt.value === exactTimes[0])?.label}`;
     }
-    return `Daily at ${exactTimes.length} times`;
+    return `${t("speedtest.dailyAt", "Daily at")} ${
+      exactTimes.length === 1
+        ? t("speedtest.scheduleManager.timeCount", "{{count}} time", { count: exactTimes.length })
+        : t("speedtest.scheduleManager.timesCount", "{{count}} times", { count: exactTimes.length })
+    }`;
   }
 
   function renderButtonContent(): ReactNode {
     if (isMissingServer) {
       const label = testType === "iperf" ? "iperf3" : "LibreSpeed";
-      return <>Select a {label} server</>;
+      return <>{t("speedtest.scheduleManager.selectServerType", "Select a {{type}} server", { type: label })}</>;
     }
     if (isMissingTime) {
-      return <>Select at least one time</>;
+      return <>{t("speedtest.scheduleManager.selectAtLeastOneTime", "Select at least one time")}</>;
     }
 
     const icon = scheduleType === "interval"
@@ -309,7 +319,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
     return (
       <>
         {icon}
-        <span>Create {getScheduleDescription()}</span>
+        <span>{t("speedtest.scheduleManager.create", "Create")} {getScheduleDescription()}</span>
       </>
     );
   }
@@ -319,7 +329,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
 
     if (isMissingServer) {
       const label = testType === "iperf" ? "iperf3" : "LibreSpeed";
-      const msg = `Please select a ${label} server before creating a schedule`;
+      const msg = t("speedtest.scheduleManager.selectServerBeforeSchedule", "Please select a {{type}} server before creating a schedule", { type: label });
       setError(msg);
       showToast(msg, "error");
       return;
@@ -367,17 +377,17 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
+          errorData.message || t("speedtest.scheduleManager.httpError", "HTTP error! status: {{status}}", { status: response.status })
         );
       }
 
       await response.json();
       queryClient.invalidateQueries({ queryKey: ["schedules"] });
-      showToast("Schedule created successfully", "success", {
+      showToast(t("speedtest.scheduleManager.scheduleCreatedSuccess", "Schedule created successfully"), "success", {
         description: getScheduleDescription()
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to create schedule";
+      const errorMessage = error instanceof Error ? error.message : t("speedtest.scheduleManager.failedToCreateSchedule", "Failed to create schedule");
       setError(errorMessage);
       showToast(errorMessage, "error");
       // Invalidate and refetch schedules on error
@@ -399,13 +409,13 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
+          errorData.message || t("speedtest.scheduleManager.httpError", "HTTP error! status: {{status}}", { status: response.status })
         );
       }
       
-      showToast("Schedule deleted successfully", "success");
+      showToast(t("speedtest.scheduleManager.scheduleDeletedSuccess", "Schedule deleted successfully"), "success");
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to delete schedule";
+      const errorMessage = error instanceof Error ? error.message : t("speedtest.scheduleManager.failedToDeleteSchedule", "Failed to delete schedule");
       setError(errorMessage);
       showToast(errorMessage, "error");
       // Invalidate and refetch schedules on error
@@ -493,11 +503,11 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
     if (serversList.length === 1) {
       return serversList[0];
     } else if (serversList.length > 1) {
-      return `${serversList.length} servers`;
+      return t("speedtest.scheduleManager.serversCount", "{{count}} servers", { count: serversList.length });
     }
     return (
       <span className="text-emerald-600 dark:text-emerald-400">
-        Closest server (auto)
+        {t("speedtest.scheduleManager.closestServerAuto", "Closest server (auto)")}
       </span>
     );
   };
@@ -510,39 +520,9 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
     );
   }
 
-  return (
-    <div className="h-full">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <div className="flex flex-col h-full">
-          <CollapsibleTrigger
-            className={cn(
-              "flex justify-between items-center w-full px-4 py-2 bg-gray-50/95 dark:bg-gray-850/95",
-              isOpen ? "rounded-t-xl" : "rounded-xl",
-              "shadow-lg border border-gray-200 dark:border-gray-800",
-              isOpen ? "border-b-0" : "",
-              "text-left cursor-pointer"
-            )}
-          >
-            <div className="flex flex-col">
-              <h2 className="text-gray-900 dark:text-white text-xl font-semibold p-1 select-none">
-                Schedule Manager
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 text-sm pl-1 pb-1">
-                Create and manage your schedules
-              </p>
-            </div>
-            <ChevronDownIcon
-              className={cn(
-                "w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-200",
-                isOpen && "transform rotate-180"
-              )}
-            />
-          </CollapsibleTrigger>
-
-          <CollapsibleContent>
-            <div className="bg-gray-50/95 dark:bg-gray-850/95 px-4 pt-3 rounded-b-xl shadow-lg flex-1 border border-t-0 border-gray-200 dark:border-gray-800">
-                  <div className="flex flex-col pl-1">
-                    <div className="flex flex-col gap-4 pb-4">
+  const content = (
+    <>
+      <div className="flex flex-col gap-4 pb-4">
                       <div className="grid grid-cols-1 gap-4">
                         <div>
                           {/* Schedule Type Toggle Buttons */}
@@ -558,7 +538,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                 }`}
                               >
                                 <ArrowPathIcon className="w-4 h-4" />
-                                <span>Interval</span>
+                                <span>{t("speedtest.interval", "Interval")}</span>
                               </Button>
                               <Button
                                 onClick={() => setScheduleType("exact")}
@@ -570,7 +550,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                 }`}
                               >
                                 <ClockIcon className="w-4 h-4" />
-                                <span>Exact Time</span>
+                                <span>{t("speedtest.scheduleManager.exactTime", "Exact Time")}</span>
                               </Button>
                             </div>
                           </div>
@@ -622,7 +602,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                         }
                                         variant="ghost"
                                         size="icon"
-                                        className="ml-1 h-5 w-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                                        className="ms-1 h-5 w-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                                       >
                                         <XMarkIcon className="w-3.5 h-3.5" />
                                       </Button>
@@ -640,8 +620,10 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                   >
                                     <span>
                                       {exactTimes.length === 0
-                                        ? "Select times..."
-                                        : `${exactTimes.length} time${exactTimes.length !== 1 ? 's' : ''} selected`}
+                                        ? t("speedtest.scheduleManager.selectTimesPlaceholder", "Select times...")
+                                        : exactTimes.length === 1
+                                          ? t("speedtest.scheduleManager.timeSelected", "{{count}} time selected", { count: exactTimes.length })
+                                          : t("speedtest.scheduleManager.timesSelected", "{{count}} times selected", { count: exactTimes.length })}
                                     </span>
                                     <ChevronDownIcon className="h-4 w-4 opacity-50" />
                                   </Button>
@@ -650,14 +632,14 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                   <div className="max-h-[400px] overflow-y-auto">
                                     <div className="p-2 border-b border-gray-200 dark:border-gray-700">
                                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Select times for daily schedule
+                                        {t("speedtest.scheduleManager.selectTimesForDailySchedule", "Select times for daily schedule")}
                                       </p>
                                     </div>
                                     <div className="p-2 space-y-1">
                                       {timeOptions.map((option) => (
                                         <label
                                           key={option.value}
-                                          className="flex items-center space-x-3 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer"
+                                          className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer"
                                         >
                                           <Checkbox
                                             checked={exactTimes.includes(option.value)}
@@ -683,7 +665,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                           onClick={() => setExactTimes([])}
                                           className="w-full text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                                         >
-                                          Clear all
+                                          {t("speedtest.scheduleManager.clearAll", "Clear all")}
                                         </Button>
                                       </div>
                                     )}
@@ -698,7 +680,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                               exactTimes.length > 0) && (
                               <div className="mt-4 p-3 bg-gray-200/50 dark:bg-gray-800/30 rounded-lg border border-gray-300 dark:border-gray-900">
                                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                                  <span className="font-medium">Next run:</span>{" "}
+                                  <span className="font-medium">{t("speedtest.scheduleManager.nextRun", "Next run:")}</span>{" "}
                                   <span className="text-blue-600 dark:text-blue-400">
                                     {(() => {
                                       // Force re-calculation when updateTrigger changes
@@ -718,26 +700,26 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                       );
 
                                       if (diffMins < 60) {
-                                        return `in ${diffMins} minute${
-                                          diffMins !== 1 ? "s" : ""
-                                        }`;
+                                        return diffMins === 1
+                                          ? t("speedtest.scheduleManager.inMinute", "in {{count}} minute", { count: diffMins })
+                                          : t("speedtest.scheduleManager.inMinutes", "in {{count}} minutes", { count: diffMins });
                                       } else if (diffMins < 1440) {
                                         const hours = Math.floor(diffMins / 60);
-                                        return `in ${hours} hour${
-                                          hours !== 1 ? "s" : ""
-                                        }`;
+                                        return hours === 1
+                                          ? t("speedtest.scheduleManager.inHour", "in {{count}} hour", { count: hours })
+                                          : t("speedtest.scheduleManager.inHours", "in {{count}} hours", { count: hours });
                                       } else {
                                         const days = Math.floor(
                                           diffMins / 1440
                                         );
-                                        return `in ${days} day${
-                                          days !== 1 ? "s" : ""
-                                        }`;
+                                        return days === 1
+                                          ? t("speedtest.scheduleManager.inDay", "in {{count}} day", { count: days })
+                                          : t("speedtest.scheduleManager.inDays", "in {{count}} days", { count: days });
                                       }
                                     })()}
                                   </span>
                                   {scheduleType === "exact" && (
-                                    <span className="text-gray-500 dark:text-gray-500 text-xs ml-2">
+                                    <span className="text-gray-500 dark:text-gray-500 text-xs ms-2">
                                       (
                                       {formatDateWithSettings(
                                         calculateNextRun(
@@ -797,7 +779,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                             }}
                           >
                             <h6 className="text-gray-900 dark:text-white mb-4 text-lg font-semibold">
-                              Active Schedules
+                              {t("speedtest.activeSchedules", "Active Schedules")}
                             </h6>
 
                             <div className="grid grid-cols-1 gap-4">
@@ -819,8 +801,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                           ) ? (
                                             <>
                                               <ClockIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                              <span>
-                                                Daily at{" "}
+                                              <span>{t("speedtest.dailyAt", "Daily at")} {" "}
                                                 {(() => {
                                                   const times =
                                                     schedule.interval
@@ -831,7 +812,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                                       times[0]
                                                     );
                                                   } else {
-                                                    return `${times.length} times`;
+                                                    return t("speedtest.scheduleManager.timesCount", "{{count}} times", { count: times.length });
                                                   }
                                                 })()}
                                               </span>
@@ -839,8 +820,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                           ) : (
                                             <>
                                               <ArrowPathIcon className="w-4 h-4 text-green-600 dark:text-green-400" />
-                                              <span>
-                                                Every {schedule.interval}
+                                              <span>{t("speedtest.every", "Every")} {schedule.interval}
                                               </span>
                                             </>
                                           )}
@@ -853,15 +833,13 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                           variant="ghost"
                                           size="icon"
                                           className="h-7 w-7 text-gray-500 dark:text-gray-400 bg-gray-200/50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-900 hover:bg-red-200/50 dark:hover:bg-red-900/50 hover:text-red-600 dark:hover:text-red-400"
-                                          title="Delete schedule"
+                                          title={t("speedtest.scheduleManager.deleteScheduleTitle", "Delete schedule")}
                                         >
                                           <XMarkIcon className="h-4 w-4" />
                                         </Button>
                                       </div>
                                       <p className="text-gray-600 dark:text-gray-400 text-sm">
-                                        <span className="font-medium">
-                                          Server:
-                                        </span>{" "}
+                                        <span className="font-medium">{t("speedtest.serverLabel", "Server:")}</span>{" "}
                                         <span className="truncate">
                                           {getServerNames(schedule.serverIds)}
                                         </span>
@@ -872,7 +850,7 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                           .split(",").length > 1 && (
                                           <div className="text-gray-600 dark:text-gray-400 text-sm mt-1">
                                             <span className="font-medium">
-                                              Times:
+                                              {t("speedtest.scheduleManager.timesLabel", "Times:")}
                                             </span>{" "}
                                             <span className="text-blue-600 dark:text-blue-400">
                                               {schedule.interval
@@ -886,11 +864,9 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                                           </div>
                                         )}
                                       <p className="text-gray-600 dark:text-gray-400 text-xs pt-2">
-                                        <span className="font-normal">
-                                          Next run in:
-                                        </span>{" "}
+                                        <span className="font-normal">{t("speedtest.nextRunIn", "Next run in:")}</span>{" "}
                                         <span className="font-medium text-blue-600 dark:text-blue-400">
-                                          {schedule.nextRun ? formatNextRun(schedule.nextRun) : "Calculating..."}
+                                          {schedule.nextRun ? formatNextRun(schedule.nextRun) : t("speedtest.scheduleManager.calculating", "Calculating...")}
                                         </span>
                                       </p>
                                     </div>
@@ -902,7 +878,48 @@ export default function ScheduleManager({ servers, selectedServers, testType }: 
                         )}
                       </AnimatePresence>
                     </div>
-                  </div>
+    </>
+  );
+
+  if (nested) {
+    return content;
+  }
+
+  return (
+    <div className="h-full">
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <div className="flex flex-col h-full">
+          <CollapsibleTrigger
+            className={cn(
+              "flex justify-between items-center w-full px-4 py-2 bg-gray-50/95 dark:bg-gray-850/95",
+              isOpen ? "rounded-t-xl" : "rounded-xl",
+              "shadow-lg border border-gray-200 dark:border-gray-800",
+              isOpen ? "border-b-0" : "",
+              "text-start cursor-pointer"
+            )}
+          >
+            <div className="flex flex-col">
+              <h2 className="text-gray-900 dark:text-white text-xl font-semibold p-1 select-none flex items-center gap-2">
+                {t("speedtest.scheduleManager.title", "Schedule Manager")}
+                <PersianTooltip text="زمان‌بندی تست سرعت. این ابزار به شما امکان می‌دهد تست‌های سرعت را به صورت خودکار و دوره‌ای اجرا کنید." />
+              </h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm ps-1 pb-1">
+                {t("speedtest.scheduleManager.description", "Create and manage your schedules")}
+              </p>
+            </div>
+            <ChevronDownIcon
+              className={cn(
+                "w-5 h-5 text-gray-600 dark:text-gray-400 transition-transform duration-200",
+                isOpen && "transform rotate-180"
+              )}
+            />
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <div className="bg-gray-50/95 dark:bg-gray-850/95 px-4 pt-3 rounded-b-xl shadow-lg flex-1 border border-t-0 border-gray-200 dark:border-gray-800">
+              <div className="flex flex-col ps-1">
+                {content}
+              </div>
             </div>
           </CollapsibleContent>
         </div>

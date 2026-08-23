@@ -84,7 +84,7 @@ export const MonitorPerformanceChart: React.FC<
           <p className="text-gray-600 dark:text-gray-400 text-xs">
             Last 30 tests • {chartData.length} data points
             {rttStats && (
-              <span className="ml-2 text-blue-600 dark:text-blue-400">
+              <span className="ms-2 text-blue-600 dark:text-blue-400">
                 • Avg RTT: {rttStats.avg.toFixed(1)}ms
               </span>
             )}

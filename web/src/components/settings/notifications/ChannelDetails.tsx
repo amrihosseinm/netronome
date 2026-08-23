@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { 
   BellIcon, 
   TrashIcon, 
@@ -38,6 +39,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
   isDeleting,
   isTesting,
 }) => {
+  const { t } = useTranslation();
   const [isEditingUrl, setIsEditingUrl] = useState(false);
   const [editedUrl, setEditedUrl] = useState(channel.url);
   const [urlError, setUrlError] = useState("");
@@ -50,19 +52,19 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
 
   const validateUrl = (url: string): boolean => {
     if (!url.trim()) {
-      setUrlError("URL is required");
+      setUrlError(t("settings.notifications.channelDetails.urlRequiredError", "URL is required"));
       return false;
     }
     
     const serviceType = url.match(/^(\w+):\/\//)?.[1];
     if (!serviceType) {
-      setUrlError("Invalid URL format. Must start with service://");
+      setUrlError(t("settings.notifications.channelDetails.invalidUrlFormatError", "Invalid URL format. Must start with service://"));
       return false;
     }
 
     const validService = SHOUTRRR_SERVICES.find(s => s.value === serviceType);
     if (!validService) {
-      setUrlError(`Unknown service type: ${serviceType}`);
+      setUrlError(t("settings.notifications.channelDetails.unknownServiceTypeError", "Unknown service type: {{serviceType}}", { serviceType }));
       return false;
     }
 
@@ -99,7 +101,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
           <div>
             <CardTitle className="text-xl">{channel.name}</CardTitle>
             <CardDescription>
-              Channel configuration and settings
+              {t("settings.notifications.channelDetails.cardDescription", "Channel configuration and settings")}
             </CardDescription>
           </div>
 
@@ -115,7 +117,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
             ) : (
               <BellIcon className="w-4 h-4" />
             )}
-            Test
+            {t("settings.notifications.testButton", "Test")}
           </Button>
           <Button
             onClick={onDelete}
@@ -124,7 +126,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
             size="sm"
           >
             <TrashIcon className="w-4 h-4" />
-            Delete
+            {t("settings.notifications.channelDetails.deleteButton", "Delete")}
           </Button>
         </div>
         </div>
@@ -135,7 +137,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
         <div>
           <div className="flex items-center justify-between mb-1">
             <Label>
-              Service URL
+              {t("settings.notifications.channelDetails.serviceUrlLabel", "Service URL")}
             </Label>
             {!isEditingUrl && (
               <Button
@@ -143,7 +145,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8"
-                title="Edit URL"
+                title={t("settings.notifications.channelDetails.editUrlTitle", "Edit URL")}
               >
                 <PencilIcon className="w-4 h-4" />
               </Button>
@@ -164,7 +166,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
                     "font-mono text-sm",
                     urlError && "border-red-500 dark:border-red-400"
                   )}
-                  placeholder="service://..."
+                  placeholder={t("settings.notifications.addChannelForm.urlPlaceholder", "service://...")}
                 />
               </div>
               
@@ -177,7 +179,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
               {detectedService && !urlError && (
                 <div className="p-2 bg-blue-500/10 border border-blue-500/30 rounded-lg">
                   <p className="text-xs text-blue-700 dark:text-blue-300">
-                    <span className="font-medium">{detectedService.label} format:</span>{" "}
+                    <span className="font-medium">{detectedService.label} {t("settings.notifications.channelDetails.formatSuffix", "format")}:</span>{" "}
                     <code className="font-mono">{detectedService.example}</code>
                   </p>
                 </div>
@@ -194,7 +196,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
                   ) : (
                     <>
                       <CheckIcon className="w-4 h-4" />
-                      Save
+                      {t("common.save", "Save")}
                     </>
                   )}
                 </Button>
@@ -204,7 +206,7 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
                   size="sm"
                 >
                   <XMarkIcon className="w-4 h-4" />
-                  Cancel
+                  {t("common.cancel", "Cancel")}
                 </Button>
               </div>
             </div>
@@ -220,12 +222,12 @@ export const ChannelDetails: React.FC<ChannelDetailsProps> = ({
         <div className="flex items-center justify-between p-4 bg-gray-200/30 dark:bg-gray-800/30 rounded-lg">
           <div>
             <Label>
-              Channel Status
+              {t("settings.notifications.channelDetails.channelStatusLabel", "Channel Status")}
             </Label>
             <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
               {channel.enabled
-                ? "Notifications will be sent to this channel"
-                : "Channel is disabled"}
+                ? t("settings.notifications.channelDetails.channelEnabledDescription", "Notifications will be sent to this channel")
+                : t("settings.notifications.channelDetails.channelDisabledDescription", "Channel is disabled")}
             </p>
           </div>
           <Switch

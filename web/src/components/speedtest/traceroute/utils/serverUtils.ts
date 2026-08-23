@@ -7,9 +7,10 @@ import { Server, SavedIperfServer } from "@/types/types";
 
 /**
  * Server type options for filtering
+ * `labelKey` is resolved at render time so it reacts to language changes
  */
 export const SERVER_TYPE_OPTIONS = [
-  { value: "all", label: "All Types" },
+  { value: "all", label: "All Types", labelKey: "traceroute.allTypes" },
   { value: "speedtest", label: "Speedtest.net" },
   { value: "iperf3", label: "iperf3" },
   { value: "librespeed", label: "LibreSpeed" },

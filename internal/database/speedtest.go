@@ -67,6 +67,58 @@ func (s *service) SaveSpeedTest(ctx context.Context, result types.SpeedTestResul
 	return &result, nil
 }
 
+func (s *service) GetAllSpeedTests(ctx context.Context) ([]types.SpeedTestResult, error) {
+	query := s.sqlBuilder.Select(
+		"id",
+		"server_name",
+		"server_id",
+		"server_host",
+		"test_type",
+		"download_speed",
+		"upload_speed",
+		"latency",
+		"jitter",
+		"is_scheduled",
+		"created_at",
+	).From("speed_tests").OrderBy("created_at DESC")
+
+	sqlStr, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build query: %w", err)
+	}
+
+	rows, err := s.db.QueryContext(ctx, sqlStr, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to execute query: %w", err)
+	}
+	defer rows.Close()
+
+	var results []types.SpeedTestResult
+	for rows.Next() {
+		var r types.SpeedTestResult
+		err := rows.Scan(
+			&r.ID,
+			&r.ServerName,
+			&r.ServerID,
+			&r.ServerHost,
+			&r.TestType,
+			&r.DownloadSpeed,
+			&r.UploadSpeed,
+			&r.Latency,
+			&r.Jitter,
+			&r.IsScheduled,
+			&r.CreatedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan row: %w", err)
+		}
+		results = append(results, r)
+	}
+
+	return results, nil
+}
+
+
 func (s *service) GetSpeedTests(ctx context.Context, timeRange string, page, limit int) (*types.PaginatedSpeedTests, error) {
 	baseQuery := s.sqlBuilder.Select().From("speed_tests")
 

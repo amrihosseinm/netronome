@@ -4,11 +4,11 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { TracerouteHop } from "@/types/types";
 import { CountryFlag } from "@/components/speedtest/packetloss/components/CountryFlag";
 import { formatRTT, getAverageRTT } from "../utils/tracerouteUtils";
-import { TABLE_COLUMNS } from "../constants/tracerouteConstants";
 
 interface TracerouteTableProps {
   hops: TracerouteHop[];
@@ -21,6 +21,7 @@ export const TracerouteTable: React.FC<TracerouteTableProps> = ({
   showAnimation = true,
   filterTrailingTimeouts = false,
 }) => {
+  const { t } = useTranslation();
   // Filter trailing timeouts if requested (for final results)
   const displayHops = filterTrailingTimeouts
     ? filterTrailingTimeoutsFromHops(hops)
@@ -31,15 +32,15 @@ export const TracerouteTable: React.FC<TracerouteTableProps> = ({
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-gray-800">
-            <th className="text-center py-3 px-2 text-gray-400 font-medium">{TABLE_COLUMNS.hop}</th>
-            <th className="text-center py-3 px-2 text-gray-400 font-medium">{TABLE_COLUMNS.host}</th>
+            <th className="text-center py-3 px-2 text-gray-400 font-medium">{t("traceroute.tableColumns.hop", "Hop")}</th>
+            <th className="text-center py-3 px-2 text-gray-400 font-medium">{t("traceroute.tableColumns.host", "Host")}</th>
             <th className="text-center py-3 px-2 text-gray-400 font-medium">
-              {TABLE_COLUMNS.provider}
+              {t("traceroute.tableColumns.provider", "Provider")}
             </th>
-            <th className="text-center py-3 px-2 text-gray-400 font-medium">{TABLE_COLUMNS.rtt1}</th>
-            <th className="text-center py-3 px-2 text-gray-400 font-medium">{TABLE_COLUMNS.rtt2}</th>
-            <th className="text-center py-3 px-2 text-gray-400 font-medium">{TABLE_COLUMNS.rtt3}</th>
-            <th className="text-center py-3 px-2 text-gray-400 font-medium">{TABLE_COLUMNS.average}</th>
+            <th className="text-center py-3 px-2 text-gray-400 font-medium">{t("traceroute.tableColumns.rtt1", "RTT 1")}</th>
+            <th className="text-center py-3 px-2 text-gray-400 font-medium">{t("traceroute.tableColumns.rtt2", "RTT 2")}</th>
+            <th className="text-center py-3 px-2 text-gray-400 font-medium">{t("traceroute.tableColumns.rtt3", "RTT 3")}</th>
+            <th className="text-center py-3 px-2 text-gray-400 font-medium">{t("traceroute.tableColumns.average", "Average")}</th>
           </tr>
         </thead>
         <tbody>
@@ -65,6 +66,7 @@ const TracerouteTableRow: React.FC<TracerouteTableRowProps> = ({
   hop,
   showAnimation,
 }) => {
+  const { t } = useTranslation();
   const RowComponent = showAnimation ? motion.tr : "tr";
   const rowProps = showAnimation
     ? {
@@ -79,10 +81,10 @@ const TracerouteTableRow: React.FC<TracerouteTableRowProps> = ({
       <td className="py-3 px-2 text-gray-700 dark:text-gray-300 text-center">{hop.number}</td>
       <td
         className="py-3 px-2 text-gray-700 dark:text-gray-300 text-center"
-        title={hop.timeout ? "Request timed out" : hop.host}
+        title={hop.timeout ? t("traceroute.requestTimedOut", "Request timed out") : hop.host}
       >
         {hop.timeout ? (
-          <span className="text-gray-500 dark:text-gray-500">Timeout</span>
+          <span className="text-gray-500 dark:text-gray-500">{t("traceroute.timeout", "Timeout")}</span>
         ) : (
           hop.host
         )}

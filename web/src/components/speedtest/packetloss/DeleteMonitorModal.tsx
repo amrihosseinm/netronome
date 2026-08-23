@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -24,22 +25,23 @@ export function DeleteMonitorModal({
   onConfirm,
   monitor,
 }: DeleteMonitorModalProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md bg-gray-50/95 dark:bg-gray-850/95 border-gray-200 dark:border-gray-900">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-            Delete Monitor
+            {t("packetLoss.deleteMonitorModal.title", "Delete Monitor")}
           </DialogTitle>
         </DialogHeader>
 
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                  Are you sure you want to delete the monitor{" "}
-                  <span className="font-medium text-gray-900 dark:text-white">
+                  {t("packetLoss.deleteMonitorModal.confirmPrefix", "Are you sure you want to delete the monitor")}{" "}
+                  <span className="font-medium text-gray-900 dark:text-white" dir="ltr">
                     {monitor?.name || monitor?.host}
                   </span>
-                  ? This action cannot be undone.{" "}
-                  <b>All history will be lost!</b>
+                  {t("packetLoss.deleteMonitorModal.confirmSuffix", "? This action cannot be undone.")}{" "}
+                  <b>{t("packetLoss.deleteMonitorModal.historyWarning", "All history will be lost!")}</b>
                 </p>
 
                 <div className="mt-6 flex justify-end gap-3">
@@ -48,7 +50,7 @@ export function DeleteMonitorModal({
                     className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
                     onClick={onClose}
                   >
-                    Cancel
+                    {t("common.cancel", "Cancel")}
                   </button>
                   <button
                     type="button"
@@ -58,7 +60,7 @@ export function DeleteMonitorModal({
                       onClose();
                     }}
                   >
-                    Delete Monitor
+                    {t("packetLoss.deleteMonitorModal.title", "Delete Monitor")}
                   </button>
                 </div>
       </DialogContent>

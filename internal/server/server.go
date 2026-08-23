@@ -237,6 +237,8 @@ func (s *Server) RegisterRoutes() {
 			protected.POST("/speedtest", s.handleSpeedTest)
 			protected.GET("/speedtest/status", s.handleSpeedTestStatus)
 			protected.GET("/speedtest/history", s.handleSpeedTestHistory)
+			protected.GET("/speedtest/history/csv", s.handleSpeedTestHistoryCSV)
+
 			protected.GET("/traceroute", s.handleTraceroute)
 			protected.GET("/traceroute/status", s.handleTracerouteStatus)
 			protected.GET("/schedules", s.handleGetSchedules)
@@ -249,10 +251,30 @@ func (s *Server) RegisterRoutes() {
 			protected.GET("/iperf/servers", iperfHandler.GetServers)
 			protected.DELETE("/iperf/servers/:id", iperfHandler.DeleteServer)
 
-						// DNS benchmark route
-						protected.GET("/dns/benchmark", handlers.HandleDNSBenchmark)
+			// DNS benchmark route
+			protected.GET("/dns/benchmark", handlers.HandleDNSBenchmark)
+			protected.POST("/dns/set", handlers.HandleSetDNS)
 
-						// Packet Loss monitoring routes
+			// Trippy (continuous traceroute) routes
+			protected.POST("/trippy/start", handlers.HandleTrippyStart)
+			protected.POST("/trippy/stop", handlers.HandleTrippyStop)
+			protected.GET("/trippy/status", handlers.HandleTrippyStatus)
+
+			// Iran Tools: domain checker, edge/CDN IP scanner, SNI spoof check
+			protected.POST("/domaincheck/scan", handlers.HandleDomainCheck)
+			protected.GET("/domaincheck/defaults", handlers.HandleDomainCheckDefaults)
+
+			protected.POST("/edgescan/start", handlers.HandleEdgeScanStart)
+			protected.POST("/edgescan/stop", handlers.HandleEdgeScanStop)
+			protected.GET("/edgescan/status", handlers.HandleEdgeScanStatus)
+			protected.GET("/edgescan/defaults", handlers.HandleEdgeScanDefaultRanges)
+
+			protected.POST("/snispoof/check", handlers.HandleSNISpoofCheck)
+
+			// Protocol/port reachability check (reflects local ISP/regional conditions)
+			protected.POST("/protocheck/run", handlers.HandleProtoCheckRun)
+
+			// Packet Loss monitoring routes
 			if s.packetLossService != nil {
 				packetLossHandler := handlers.NewPacketLossHandler(s.db, s.packetLossService, s.scheduler)
 				protected.GET("/packetloss/monitors", packetLossHandler.GetMonitors)

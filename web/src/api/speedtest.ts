@@ -6,9 +6,11 @@
 import { getApiUrl } from "@/utils/baseUrl";
 import { SpeedTestOptions } from "@/types/speedtest";
 
-export async function getServers(testType: string) {
+export async function getServers(testType: string, refresh = false) {
   try {
-    const response = await fetch(getApiUrl(`/servers?testType=${testType}`));
+    const response = await fetch(
+      getApiUrl(`/servers?testType=${testType}${refresh ? "&refresh=true" : ""}`)
+    );
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || "Failed to fetch servers");
@@ -41,6 +43,33 @@ export async function getHistory(
     throw error;
   }
 }
+export async function downloadHistoryCSV() {
+  try {
+    const response = await fetch(getApiUrl("/speedtest/history/csv"), {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to download CSV");
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.style.display = "none";
+    a.href = url;
+    a.download = `speedtest_history_${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error("Error downloading CSV:", error);
+    throw error;
+  }
+}
+
+
 
 export async function getSchedules() {
   try {

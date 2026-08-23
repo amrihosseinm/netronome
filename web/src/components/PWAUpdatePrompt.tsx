@@ -5,6 +5,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "@/components/common/Toast";
+import i18n from "@/i18n";
 
 // Manual PWA implementation using workbox-window
 export function PWAUpdatePrompt() {
@@ -85,17 +86,17 @@ export function PWAUpdatePrompt() {
     if (needRefresh && !toastIdRef.current) {
       // Use the raw toast API for custom cancel button
       toastIdRef.current = toast.info(
-        "New content available, click on reload button to update.",
+        i18n.t("pwa.updateAvailable", "New content available, click on reload button to update."),
         {
           duration: Infinity,
           action: {
-            label: "Reload",
+            label: i18n.t("pwa.reload", "Reload"),
             onClick: () => {
               updateServiceWorker();
             },
           },
           cancel: {
-            label: "Later",
+            label: i18n.t("pwa.later", "Later"),
             onClick: () => {
               setNeedRefresh(false);
               if (toastIdRef.current) {

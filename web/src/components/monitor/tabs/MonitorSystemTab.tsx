@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { MonitorAgent } from "@/api/monitor";
 import { useMonitorAgent } from "@/hooks/useMonitorAgent";
@@ -18,6 +19,7 @@ interface MonitorSystemTabProps {
 }
 
 export const MonitorSystemTab: React.FC<MonitorSystemTabProps> = ({ agent }) => {
+  const { t } = useTranslation();
   const { status, systemInfo, hardwareStats } = useMonitorAgent({
     agent,
     includeSystemInfo: true,
@@ -35,7 +37,7 @@ export const MonitorSystemTab: React.FC<MonitorSystemTabProps> = ({ agent }) => 
         transition={{ duration: 0.3 }}
         className="text-center py-8 sm:py-12"
       >
-        <p className="text-lg text-gray-500 dark:text-gray-400">Loading system information...</p>
+        <p className="text-lg text-gray-500 dark:text-gray-400">{t("monitor.systemTab.loadingSystemInformation", "Loading system information...")}</p>
       </motion.div>
     );
   }
@@ -50,9 +52,9 @@ export const MonitorSystemTab: React.FC<MonitorSystemTabProps> = ({ agent }) => 
         className="text-center py-8 sm:py-12"
       >
         <ServerIcon className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-        <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">No System Information Available</p>
+        <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">{t("monitor.systemTab.noSystemInformationAvailable", "No System Information Available")}</p>
         <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-1.5 sm:mt-2">
-          The agent may have just been added or hasn't collected any data yet.
+          {t("monitor.systemTab.noSystemInformationHint", "The agent may have just been added or hasn't collected any data yet.")}
         </p>
       </motion.div>
     );
@@ -61,7 +63,7 @@ export const MonitorSystemTab: React.FC<MonitorSystemTabProps> = ({ agent }) => 
   return (
     <div className="space-y-4 sm:space-y-6">
       {/* Offline Banner */}
-      {isOffline && <MonitorOfflineBanner message="Showing cached system information. Real-time data unavailable." />}
+      {isOffline && <MonitorOfflineBanner message={t("monitor.systemTab.offlineBannerMessage", "Showing cached system information. Real-time data unavailable.")} />}
 
       <div className="space-y-4 sm:space-y-6 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-6">
         {/* Left Column - System Information */}
@@ -147,9 +149,9 @@ export const MonitorSystemTab: React.FC<MonitorSystemTabProps> = ({ agent }) => 
           transition={{ duration: 0.3, delay: 0.35 }}
           className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4 sm:mt-6"
         >
-          {hardwareStats?.from_cache || systemInfo?.from_cache ? "Data collected" : "Last updated"}:{" "}
+          {hardwareStats?.from_cache || systemInfo?.from_cache ? t("monitor.systemTab.dataCollected", "Data collected") : t("monitor.systemTab.lastUpdated", "Last updated")}:{" "}
           {formatters.time(new Date((hardwareStats?.updated_at || systemInfo?.updated_at) || Date.now()))}
-          {(hardwareStats?.from_cache || systemInfo?.from_cache) && " (cached)"}
+          {(hardwareStats?.from_cache || systemInfo?.from_cache) && ` (${t("monitor.systemTab.cached", "cached")})`}
         </motion.div>
       )}
     </div>

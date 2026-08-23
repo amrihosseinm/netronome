@@ -12,6 +12,9 @@ import (
 	"net/url"
 	"os/exec"
 	"regexp"
+	"net/http"
+	"os"
+
 	"runtime"
 	"strconv"
 	"strings"
@@ -58,8 +61,70 @@ func (s *service) initGeoIP() {
 	}
 
 	if countryDB == nil && asnDB == nil {
-		log.Warn().Msg("No GeoIP databases loaded. See README for setup instructions.")
+		log.Warn().Msg("No GeoIP databases loaded. Auto-download will be triggered on first traceroute use.")
 	}
+}
+
+// DownloadFile downloads a file from URL to the specified path
+func downloadFile(filepath string, url string) error {
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("bad status: %s", resp.Status)
+	}
+
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
+// DownloadGeoIPDatabases downloads the GeoIP databases if they are missing
+func (s *service) DownloadGeoIPDatabases() error {
+	// Privex maintains an open mirror of the MaxMind GeoLite2 databases
+	countryURL := "https://geoip.privex.io/GeoLite2-Country.mmdb"
+	asnURL := "https://geoip.privex.io/GeoLite2-ASN.mmdb"
+
+	var countryPath, asnPath string
+	
+	if s.fullConfig != nil && s.fullConfig.GeoIP.CountryDatabasePath != "" {
+		countryPath = s.fullConfig.GeoIP.CountryDatabasePath
+	} else {
+		countryPath = "GeoLite2-Country.mmdb"
+	}
+	
+	if s.fullConfig != nil && s.fullConfig.GeoIP.ASNDatabasePath != "" {
+		asnPath = s.fullConfig.GeoIP.ASNDatabasePath
+	} else {
+		asnPath = "GeoLite2-ASN.mmdb"
+	}
+
+	log.Info().Msg("Downloading GeoLite2-Country database...")
+	if err := downloadFile(countryPath, countryURL); err != nil {
+		return fmt.Errorf("failed to download country DB: %w", err)
+	}
+	
+	log.Info().Msg("Downloading GeoLite2-ASN database...")
+	if err := downloadFile(asnPath, asnURL); err != nil {
+		return fmt.Errorf("failed to download ASN DB: %w", err)
+	}
+
+	// Re-initialize to load the newly downloaded files
+	if s.fullConfig != nil {
+		s.fullConfig.GeoIP.CountryDatabasePath = countryPath
+		s.fullConfig.GeoIP.ASNDatabasePath = asnPath
+	}
+	s.initGeoIP()
+
+	return nil
 }
 
 // Get country code from IP address
@@ -176,7 +241,7 @@ func (s *service) RunTraceroute(ctx context.Context, host string) (*TracerouteRe
 
 	// Initialize GeoIP databases if not already done
 	if countryDB == nil && asnDB == nil {
-		s.initGeoIP()
+		s.DownloadGeoIPDatabases()
 	}
 
 	// Extract hostname from URL if it's a full URL

@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   ArrowDownIcon,
@@ -69,40 +70,43 @@ interface CurrentSpeedCardProps {
   delay?: number;
 }
 
-const CurrentSpeedCard: React.FC<CurrentSpeedCardProps> = ({ status, isOffline, delay = 0 }) => (
-  <motion.div
-    {...CARD_ANIMATION}
-    transition={{ ...CARD_ANIMATION.transition, delay }}
-    className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-3 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-800"
-  >
-    <div className="flex items-center justify-between mb-2 sm:mb-4">
-      <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
-        Current Speed
-      </h3>
-      <SignalIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" aria-hidden="true" />
-    </div>
-    {status?.liveData ? (
-      <div className="flex items-center justify-between sm:block sm:space-y-2">
-        <div className="flex-1 flex items-center space-x-2 sm:space-x-2">
-          <ArrowDownIcon className="h-4 w-4 sm:h-4 sm:w-4 text-blue-500" aria-hidden="true" />
-          <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tabular-nums">
-            {status.liveData.rx.ratestring}
-          </span>
-        </div>
-        <div className="flex-1 flex items-center justify-end sm:justify-start space-x-2 sm:space-x-2">
-          <ArrowUpIcon className="h-4 w-4 sm:h-4 sm:w-4 text-green-500" aria-hidden="true" />
-          <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tabular-nums">
-            {status.liveData.tx.ratestring}
-          </span>
-        </div>
+const CurrentSpeedCard: React.FC<CurrentSpeedCardProps> = ({ status, isOffline, delay = 0 }) => {
+  const { t } = useTranslation();
+  return (
+    <motion.div
+      {...CARD_ANIMATION}
+      transition={{ ...CARD_ANIMATION.transition, delay }}
+      className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-3 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-800"
+    >
+      <div className="flex items-center justify-between mb-2 sm:mb-4">
+        <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
+          {t("monitor.overviewTab.currentSpeed", "Current Speed")}
+        </h3>
+        <SignalIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" aria-hidden="true" />
       </div>
-    ) : (
-      <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
-        {isOffline ? "Offline" : "No data"}
-      </p>
-    )}
-  </motion.div>
-);
+      {status?.liveData ? (
+        <div className="flex items-center justify-between sm:block sm:space-y-2">
+          <div className="flex-1 flex items-center gap-2 sm:gap-2">
+            <ArrowDownIcon className="h-4 w-4 sm:h-4 sm:w-4 text-blue-500" aria-hidden="true" />
+            <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tabular-nums">
+              {status.liveData.rx.ratestring}
+            </span>
+          </div>
+          <div className="flex-1 flex items-center justify-end sm:justify-start gap-2 sm:gap-2">
+            <ArrowUpIcon className="h-4 w-4 sm:h-4 sm:w-4 text-green-500" aria-hidden="true" />
+            <span className="text-base sm:text-lg font-bold text-gray-900 dark:text-white tabular-nums">
+              {status.liveData.tx.ratestring}
+            </span>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">
+          {isOffline ? t("monitor.overviewTab.offline", "Offline") : t("monitor.overviewTab.noData", "No data")}
+        </p>
+      )}
+    </motion.div>
+  );
+};
 
 // Sub-component for usage cards
 interface UsageCardProps {
@@ -116,51 +120,54 @@ interface UsageCardProps {
   delay?: number;
 }
 
-const UsageCard: React.FC<UsageCardProps> = ({ title, icon, usage, delay = 0 }) => (
-  <motion.div
-    {...CARD_ANIMATION}
-    transition={{ ...CARD_ANIMATION.transition, delay }}
-    className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-3 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-800"
-  >
-    {/* Mobile: Horizontal layout, Desktop: Vertical layout */}
-    <div className="sm:block">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-2 sm:mb-4">
-        <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
-          {title}
-        </h3>
-        <div className="hidden sm:block">{icon}</div>
-      </div>
-      
-      {usage ? (
-        <div className="flex items-center justify-between sm:block">
-          {/* Total */}
-          <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white sm:mb-2">
-            {formatBytes(usage.total)}
-          </p>
-          
-          {/* Download/Upload stats */}
-          <div className="flex items-center space-x-3 sm:space-x-4 text-xs sm:text-sm">
-            <div className="flex items-center space-x-1">
-              <ArrowDownIcon className="h-3 w-3 text-blue-500" />
-              <span className="text-gray-600 dark:text-gray-400 tabular-nums">
-                {formatBytes(usage.download)}
-              </span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <ArrowUpIcon className="h-3 w-3 text-green-500" />
-              <span className="text-gray-600 dark:text-gray-400 tabular-nums">
-                {formatBytes(usage.upload)}
-              </span>
+const UsageCard: React.FC<UsageCardProps> = ({ title, icon, usage, delay = 0 }) => {
+  const { t } = useTranslation();
+  return (
+    <motion.div
+      {...CARD_ANIMATION}
+      transition={{ ...CARD_ANIMATION.transition, delay }}
+      className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-3 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-800"
+    >
+      {/* Mobile: Horizontal layout, Desktop: Vertical layout */}
+      <div className="sm:block">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-2 sm:mb-4">
+          <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
+            {title}
+          </h3>
+          <div className="hidden sm:block">{icon}</div>
+        </div>
+
+        {usage ? (
+          <div className="flex items-center justify-between sm:block">
+            {/* Total */}
+            <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white sm:mb-2">
+              {formatBytes(usage.total)}
+            </p>
+
+            {/* Download/Upload stats */}
+            <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm">
+              <div className="flex items-center gap-1">
+                <ArrowDownIcon className="h-3 w-3 text-blue-500" />
+                <span className="text-gray-600 dark:text-gray-400 tabular-nums">
+                  {formatBytes(usage.download)}
+                </span>
+              </div>
+              <div className="flex items-center gap-1">
+                <ArrowUpIcon className="h-3 w-3 text-green-500" />
+                <span className="text-gray-600 dark:text-gray-400 tabular-nums">
+                  {formatBytes(usage.upload)}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No data</p>
-      )}
-    </div>
-  </motion.div>
-);
+        ) : (
+          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">{t("monitor.overviewTab.noData", "No data")}</p>
+        )}
+      </div>
+    </motion.div>
+  );
+};
 
 // Progress bar component for resource monitors
 interface ResourceProgressBarProps {
@@ -208,6 +215,7 @@ interface TemperatureAlertProps {
 }
 
 const TemperatureAlert: React.FC<TemperatureAlertProps> = ({ temperatures }) => {
+  const { t } = useTranslation();
   if (!temperatures || temperatures.length === 0) return null;
 
   const hotSensors = temperatures.filter((t) => t.temperature > 80);
@@ -229,7 +237,7 @@ const TemperatureAlert: React.FC<TemperatureAlertProps> = ({ temperatures }) => 
       role="alert"
       aria-live="polite"
     >
-      <div className="flex items-start space-x-2 sm:space-x-3">
+      <div className="flex items-start gap-2 sm:gap-3">
         <FireIcon
           className={`h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 mt-0.5 ${
             isHot
@@ -246,7 +254,7 @@ const TemperatureAlert: React.FC<TemperatureAlertProps> = ({ temperatures }) => 
                 : "text-amber-900 dark:text-amber-100"
             }`}
           >
-            Temperature Warning
+            {t("monitor.overviewTab.temperatureWarning", "Temperature Warning")}
           </h4>
           <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
             {alertSensors.map((sensor, idx) => (
@@ -259,7 +267,7 @@ const TemperatureAlert: React.FC<TemperatureAlertProps> = ({ temperatures }) => 
                 }`}
               >
                 <span className="font-medium">{sensor.temperature.toFixed(0)}°C</span>
-                <span className="opacity-75 ml-1">
+                <span className="opacity-75 ms-1">
                   {sensor.label || sensor.sensor_key}
                 </span>
               </span>
@@ -282,6 +290,7 @@ interface SystemInfoDetailsProps {
 }
 
 const SystemInfoDetails: React.FC<SystemInfoDetailsProps> = ({ cpu, kernel }) => {
+  const { t } = useTranslation();
   const cpuModel = cpu.model
     ? cpu.model.replace(/\s+/g, " ").trim().split("@")[0].trim()
     : null;
@@ -290,10 +299,10 @@ const SystemInfoDetails: React.FC<SystemInfoDetailsProps> = ({ cpu, kernel }) =>
     if (!kernel) return null;
     
     if (kernel.toLowerCase().includes("darwin")) {
-      return <FontAwesomeIcon icon={faApple} className="h-4 w-4 text-gray-500 dark:text-gray-500 ml-2 mr-1" />;
+      return <FontAwesomeIcon icon={faApple} className="h-4 w-4 text-gray-500 dark:text-gray-500 ms-2 me-1" />;
     }
     if (kernel.toLowerCase().includes("linux")) {
-      return <FontAwesomeIcon icon={faLinux} className="h-4 w-4 text-gray-500 dark:text-gray-500 ml-2 mr-1" />;
+      return <FontAwesomeIcon icon={faLinux} className="h-4 w-4 text-gray-500 dark:text-gray-500 ms-2 me-1" />;
     }
     return null;
   };
@@ -306,9 +315,9 @@ const SystemInfoDetails: React.FC<SystemInfoDetailsProps> = ({ cpu, kernel }) =>
           <span className="hidden sm:inline text-gray-500 dark:text-gray-500 mx-1">•</span>
         </>
       )}
-      {cpu.cores} {cpu.cores === 1 ? "core" : "cores"}
+      {cpu.cores} {cpu.cores === 1 ? t("monitor.overviewTab.core", "core") : t("monitor.overviewTab.cores", "cores")}
       {cpu.threads && cpu.threads !== cpu.cores && (
-        <>, {cpu.threads} threads</>
+        <>, {t("monitor.overviewTab.threadsCount", "{{count}} threads", { count: cpu.threads })}</>
       )}
       {/* Only show kernel on desktop */}
       <span className="hidden sm:inline">
@@ -357,7 +366,7 @@ const ResourceMonitorCard: React.FC<ResourceMonitorCardProps> = ({
     <div className="flex items-center justify-between sm:block">
       {/* Left side - Title and value */}
       <div className="flex-1">
-        <div className="flex items-center space-x-2 sm:justify-between sm:mb-4">
+        <div className="flex items-center gap-2 sm:justify-between sm:mb-4">
           {/* Mobile: Icon on left of title */}
           <div className="sm:hidden">{icon}</div>
           <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -386,7 +395,7 @@ const ResourceMonitorCard: React.FC<ResourceMonitorCardProps> = ({
       </div>
       
       {/* Right side - Circular progress (mobile only) */}
-      <div className="sm:hidden ml-4">
+      <div className="sm:hidden ms-4">
         <div className="relative h-12 w-12">
           <svg className="h-12 w-12 transform -rotate-90">
             <circle
@@ -430,6 +439,7 @@ const ResourceMonitorCard: React.FC<ResourceMonitorCardProps> = ({
 export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
   agent,
 }) => {
+  const { t } = useTranslation();
   const { status, nativeData, hardwareStats, systemInfo } = useMonitorAgent({
     agent,
     includeNativeData: true,
@@ -454,7 +464,7 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
       >
         {/* Mobile: Vertical layout, Desktop: Horizontal layout */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
             {/* Hostname Icon - Hidden on mobile */}
             <ServerIcon className="hidden sm:block h-8 w-8 text-gray-600 dark:text-gray-400" aria-hidden="true" />
 
@@ -467,7 +477,7 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
               
               {/* CPU Info */}
               {hardwareStats?.cpu && (
-                <div className="flex items-center space-x-1 sm:mt-0.5">
+                <div className="flex items-center gap-1 sm:mt-0.5">
                   <CpuChipIcon className="h-4 w-4 sm:h-4 sm:w-4 text-gray-500 dark:text-gray-500" aria-hidden="true" />
                   <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
                     <SystemInfoDetails
@@ -480,7 +490,7 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
               
               {/* Kernel - Mobile only */}
               {systemInfo?.kernel && (
-                <div className="flex items-center space-x-1 sm:hidden">
+                <div className="flex items-center gap-1 sm:hidden">
                   {systemInfo.kernel.toLowerCase().includes("darwin") ? (
                     <FontAwesomeIcon icon={faApple} className="h-4 w-4 text-gray-500 dark:text-gray-500" />
                   ) : systemInfo.kernel.toLowerCase().includes("linux") ? (
@@ -495,24 +505,24 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
               )}
               
               {/* Uptime - Mobile only */}
-              <div className="flex items-center space-x-1 sm:hidden">
+              <div className="flex items-center gap-1 sm:hidden">
                 <ClockIcon className="h-4 w-4 text-gray-400" aria-hidden="true" />
                 <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
                   {systemInfo?.uptime
-                    ? `Up ${formatUptime(systemInfo.uptime)}`
-                    : "N/A"}
+                    ? t("monitor.overviewTab.upFor", "Up {{uptime}}", { uptime: formatUptime(systemInfo.uptime) })
+                    : t("monitor.overviewTab.notAvailable", "N/A")}
                 </span>
               </div>
             </div>
           </div>
 
           {/* Uptime - Desktop only */}
-          <div className="hidden sm:flex items-center space-x-2">
+          <div className="hidden sm:flex items-center gap-2">
             <ClockIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {systemInfo?.uptime
-                ? `Up ${formatUptime(systemInfo.uptime)}`
-                : "N/A"}
+                ? t("monitor.overviewTab.upFor", "Up {{uptime}}", { uptime: formatUptime(systemInfo.uptime) })
+                : t("monitor.overviewTab.notAvailable", "N/A")}
             </span>
           </div>
         </div>
@@ -529,7 +539,7 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
 
         {/* Today's Usage */}
         <UsageCard
-          title="Today's Usage"
+          title={t("monitor.overviewTab.todaysUsage", "Today's Usage")}
           icon={<ChartBarIcon className="h-5 w-5 text-gray-400" />}
           usage={usage?.["Today"]}
           delay={0.15}
@@ -537,7 +547,7 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
 
         {/* This Week Usage */}
         <UsageCard
-          title="This Week"
+          title={t("monitor.overviewTab.thisWeek", "This Week")}
           icon={<CalendarIcon className="h-5 w-5 text-gray-400" />}
           usage={usage?.["This week"]}
           delay={0.2}
@@ -545,7 +555,7 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
 
         {/* This Month Usage */}
         <UsageCard
-          title="This Month"
+          title={t("monitor.overviewTab.thisMonth", "This Month")}
           icon={<CalendarIcon className="h-5 w-5 text-gray-400" />}
           usage={usage?.["This Month"]}
           delay={0.25}
@@ -557,16 +567,16 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
         {/* CPU Usage */}
         {hardwareStats?.cpu ? (
           <ResourceMonitorCard
-            title="CPU Usage"
+            title={t("monitor.overviewTab.cpuUsage", "CPU Usage")}
             icon={<CpuChipIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />}
             percentage={hardwareStats.cpu.usage_percent}
             primaryValue={`${hardwareStats.cpu.usage_percent.toFixed(1)}%`}
             secondaryValue={
               hardwareStats.cpu.load_avg?.[0]
-                ? `Load: ${hardwareStats.cpu.load_avg[0].toFixed(2)}`
+                ? t("monitor.overviewTab.loadValue", "Load: {{value}}", { value: hardwareStats.cpu.load_avg[0].toFixed(2) })
                 : ""
             }
-            detailText={`${hardwareStats.cpu.threads} threads @ ${hardwareStats.cpu.frequency?.toFixed(0) || "?"} MHz`}
+            detailText={t("monitor.overviewTab.cpuDetailText", "{{threads}} threads @ {{frequency}} MHz", { threads: hardwareStats.cpu.threads, frequency: hardwareStats.cpu.frequency?.toFixed(0) || "?" })}
             delay={0.3}
           />
         ) : (
@@ -577,22 +587,22 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                CPU Usage
+                {t("monitor.overviewTab.cpuUsage", "CPU Usage")}
               </h3>
               <CpuChipIcon className="h-5 w-5 text-gray-400" />
             </div>
-            <p className="text-gray-500 dark:text-gray-400">No data</p>
+            <p className="text-gray-500 dark:text-gray-400">{t("monitor.overviewTab.noData", "No data")}</p>
           </motion.div>
         )}
 
         {/* Memory Usage */}
         {hardwareStats?.memory ? (
           <ResourceMonitorCard
-            title="Memory Usage"
+            title={t("monitor.overviewTab.memoryUsage", "Memory Usage")}
             icon={<CircleStackIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />}
             percentage={hardwareStats.memory.used_percent}
             primaryValue={`${hardwareStats.memory.used_percent.toFixed(1)}%`}
-            secondaryValue={`${formatBytes(hardwareStats.memory.available)} free`}
+            secondaryValue={t("monitor.overviewTab.freeAmount", "{{amount}} free", { amount: formatBytes(hardwareStats.memory.available) })}
             detailText={`${formatBytes(hardwareStats.memory.used)} / ${formatBytes(hardwareStats.memory.total)}`}
             delay={0.35}
           />
@@ -604,11 +614,11 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                Memory Usage
+                {t("monitor.overviewTab.memoryUsage", "Memory Usage")}
               </h3>
               <CircleStackIcon className="h-5 w-5 text-gray-400" />
             </div>
-            <p className="text-gray-500 dark:text-gray-400">No data</p>
+            <p className="text-gray-500 dark:text-gray-400">{t("monitor.overviewTab.noData", "No data")}</p>
           </motion.div>
         )}
 
@@ -620,11 +630,11 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
               hardwareStats.disks[0];
             return (
               <ResourceMonitorCard
-                title="Primary Disk"
+                title={t("monitor.overviewTab.primaryDisk", "Primary Disk")}
                 icon={<ServerIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />}
                 percentage={primaryDisk.used_percent}
                 primaryValue={`${primaryDisk.used_percent.toFixed(1)}%`}
-                secondaryValue={`${formatBytes(primaryDisk.free)} free`}
+                secondaryValue={t("monitor.overviewTab.freeAmount", "{{amount}} free", { amount: formatBytes(primaryDisk.free) })}
                 detailText={`${primaryDisk.path} • ${formatBytes(primaryDisk.used)} / ${formatBytes(primaryDisk.total)}`}
                 delay={0.4}
                 thresholds={{ low: 70, medium: 85 }}
@@ -639,11 +649,11 @@ export const MonitorOverviewTab: React.FC<MonitorOverviewTabProps> = ({
           >
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <h3 className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400">
-                Primary Disk
+                {t("monitor.overviewTab.primaryDisk", "Primary Disk")}
               </h3>
               <ServerIcon className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
             </div>
-            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No data</p>
+            <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">{t("monitor.overviewTab.noData", "No data")}</p>
           </motion.div>
         )}
       </div>

@@ -5,6 +5,7 @@
 
 import { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
+import i18n from "@/i18n";
 
 interface Props {
   children: ReactNode;
@@ -33,13 +34,13 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-              Something went wrong
+              {i18n.t("errorBoundary.somethingWentWrong", "Something went wrong")}
             </h1>
             <Button
               variant="link"
               onClick={() => window.location.reload()}
             >
-              Reload page
+              {i18n.t("errorBoundary.reloadPage", "Reload page")}
             </Button>
           </div>
         </div>

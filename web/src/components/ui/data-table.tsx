@@ -171,8 +171,8 @@ export function DataTable<TData, TValue>({
           {showColumnVisibility && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="secondary" className="ml-auto shadow-none">
-                  Columns <ChevronDown className="ml-2 h-4 w-4" />
+                <Button variant="secondary" className="ms-auto shadow-none">
+                  Columns <ChevronDown className="ms-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -262,14 +262,14 @@ export function DataTable<TData, TValue>({
       </div>
 
       {showPagination && (
-        <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex items-center justify-end gap-2 py-4">
           {showRowSelection && (
             <div className="flex-1 text-sm text-gray-600 dark:text-gray-400">
               {table.getFilteredSelectedRowModel().rows.length} of{" "}
               {table.getFilteredRowModel().rows.length} row(s) selected.
             </div>
           )}
-          <div className="space-x-2">
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -304,10 +304,10 @@ export function createSortableHeader<TData>(
         onClick={() =>
           tableColumn.toggleSorting(tableColumn.getIsSorted() === "asc")
         }
-        className="h-auto p-0 hover:bg-transparent text-left justify-start font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
+        className="h-auto p-0 hover:bg-transparent text-start justify-start font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
       >
         {label}
-        <ArrowUpDown className="ml-2 h-4 w-4" />
+        <ArrowUpDown className="ms-2 h-4 w-4" />
       </Button>
     );
   };
@@ -319,7 +319,7 @@ export function createRightAlignedSortableHeader<TData>(
 ): ColumnDef<TData>["header"] {
   return ({ column: tableColumn }) => {
     return (
-      <div className="text-right">
+      <div className="text-end">
         <Button
           variant="ghost"
           onClick={() =>
@@ -328,7 +328,7 @@ export function createRightAlignedSortableHeader<TData>(
           className="h-auto p-0 hover:bg-transparent justify-end font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100"
         >
           {label}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <ArrowUpDown className="ms-2 h-4 w-4" />
         </Button>
       </div>
     );

@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -59,17 +60,18 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
   onFormDataChange,
   isLoading = false,
 }) => {
+  const { t } = useTranslation();
   const [errors, setErrors] = useState<{ host?: string; name?: string }>({});
 
   const validateForm = () => {
     const newErrors: { host?: string; name?: string } = {};
 
     if (!formData.host.trim()) {
-      newErrors.host = "Host is required";
+      newErrors.host = t("packetLoss.monitorForm.hostRequired", "Host is required");
     }
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name = t("packetLoss.monitorForm.nameRequired", "Name is required");
     }
 
     setErrors(newErrors);
@@ -97,14 +99,14 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
       <DialogContent className="w-full max-w-md bg-white dark:bg-gray-850 border dark:border-gray-900">
         <DialogHeader>
           <DialogTitle className="text-lg font-medium text-gray-900 dark:text-white">
-            {editingMonitor ? "Edit Monitor" : "New Monitor"}
+            {editingMonitor ? t("packetLoss.monitorForm.editMonitor", "Edit Monitor") : t("packetLoss.monitorForm.newMonitor", "New Monitor")}
           </DialogTitle>
         </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-4">
                     <div>
-                      <Label>Host</Label>
+                      <Label>{t("packetLoss.monitorForm.hostLabel", "Host")}</Label>
                       <Input
                         type="text"
                         value={formData.host}
@@ -114,7 +116,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                             host: e.target.value,
                           })
                         }
-                        placeholder="e.g., google.com or 8.8.8.8"
+                        placeholder={t("packetLoss.monitorForm.hostPlaceholder", "e.g., google.com or 8.8.8.8")}
                         className={errors.host ? "border-red-500 focus:ring-red-500/50" : ""}
                         data-1p-ignore
                         data-lpignore="true"
@@ -129,12 +131,12 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                       )}
                       {!errors.host && (
                         <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                          Some hosts may block ICMP ping requests
+                          {t("packetLoss.monitorForm.icmpWarning", "Some hosts may block ICMP ping requests")}
                         </p>
                       )}
                     </div>
                     <div>
-                      <Label>Name</Label>
+                      <Label>{t("packetLoss.monitorForm.nameLabel", "Name")}</Label>
                       <Input
                         type="text"
                         value={formData.name}
@@ -144,7 +146,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                             name: e.target.value,
                           })
                         }
-                        placeholder="e.g., Google DNS"
+                        placeholder={t("packetLoss.monitorForm.namePlaceholder", "e.g., Google DNS")}
                         className={errors.name ? "border-red-500 focus:ring-red-500/50" : ""}
                         data-1p-ignore
                         data-lpignore="true"
@@ -161,7 +163,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                     {/* Schedule Type Toggle */}
                     <div className="mb-4">
                       <Label className="mb-2">
-                        Schedule Type
+                        {t("speedtest.scheduleManager.scheduleType", "Schedule Type")}
                       </Label>
                       <div className="grid grid-cols-2 gap-2 p-1 bg-gray-200/50 dark:bg-gray-800/30 rounded-lg">
                         <button
@@ -179,7 +181,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                           }`}
                         >
                           <ArrowPathIcon className="w-4 h-4" />
-                          <span>Interval</span>
+                          <span>{t("speedtest.interval", "Interval")}</span>
                         </button>
                         <button
                           type="button"
@@ -196,7 +198,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                           }`}
                         >
                           <ClockIcon className="w-4 h-4" />
-                          <span>Exact Time</span>
+                          <span>{t("speedtest.scheduleManager.exactTime", "Exact Time")}</span>
                         </button>
                       </div>
                     </div>
@@ -204,7 +206,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                     {/* Interval or Exact Time Selector */}
                     {formData.scheduleType === "interval" ? (
                       <div>
-                        <Label>Check Interval</Label>
+                        <Label>{t("packetLoss.monitorForm.checkInterval", "Check Interval")}</Label>
                         <Select
                           value={formData.interval}
                           onValueChange={(value) =>
@@ -216,7 +218,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                               {intervalOptions.find(
                                 (opt) => opt.value === formData.interval
                               )?.label ||
-                                `Every ${formatInterval(formData.interval)}`}
+                                t("packetLoss.monitorForm.everyInterval", "Every {{interval}}", { interval: formatInterval(formData.interval) })}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
@@ -230,7 +232,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                       </div>
                     ) : (
                       <div>
-                        <Label>Test Times</Label>
+                        <Label>{t("packetLoss.monitorForm.testTimes", "Test Times")}</Label>
                         <div className="space-y-3 mt-2">
                           {/* Selected Times Display */}
                           {formData.exactTimes && formData.exactTimes.length > 0 && (
@@ -255,7 +257,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                                         exactTimes: newTimes,
                                       });
                                     }}
-                                    className="ml-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                                    className="ms-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                                   >
                                     <XMarkIconMini className="w-3.5 h-3.5" />
                                   </button>
@@ -274,8 +276,10 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                               >
                                 <span>
                                   {!formData.exactTimes || formData.exactTimes.length === 0
-                                    ? "Select times..."
-                                    : `${formData.exactTimes.length} time${formData.exactTimes.length !== 1 ? 's' : ''} selected`}
+                                    ? t("speedtest.scheduleManager.selectTimesPlaceholder", "Select times...")
+                                    : formData.exactTimes.length === 1
+                                      ? t("speedtest.scheduleManager.timeSelected", "{{count}} time selected", { count: formData.exactTimes.length })
+                                      : t("speedtest.scheduleManager.timesSelected", "{{count}} times selected", { count: formData.exactTimes.length })}
                                 </span>
                                 <ChevronDownIcon className="h-4 w-4 opacity-50" />
                               </Button>
@@ -284,14 +288,14 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                               <div className="max-h-[400px] overflow-y-auto">
                                 <div className="p-2 border-b border-gray-200 dark:border-gray-700">
                                   <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    Select times for daily packet loss tests
+                                    {t("packetLoss.monitorForm.selectTimesForDailyTests", "Select times for daily packet loss tests")}
                                   </p>
                                 </div>
                                 <div className="p-2 space-y-1">
                                   {timeOptions.map((option) => (
                                     <label
                                       key={option.value}
-                                      className="flex items-center space-x-3 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer"
+                                      className="flex items-center gap-3 px-2 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700/50 cursor-pointer"
                                     >
                                       <Checkbox
                                         checked={formData.exactTimes?.includes(option.value) || false}
@@ -328,7 +332,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                                       })}
                                       className="w-full text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                                     >
-                                      Clear all
+                                      {t("speedtest.scheduleManager.clearAll", "Clear all")}
                                     </Button>
                                   </div>
                                 )}
@@ -340,7 +344,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                     )}
 
                     <div>
-                      <Label>Packets per Test</Label>
+                      <Label>{t("packetLoss.monitorForm.packetsPerTest", "Packets per Test")}</Label>
                       <Input
                         type="number"
                         value={formData.packetCount}
@@ -355,7 +359,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                       />
                     </div>
                     <div>
-                      <Label>Alert Threshold (% packet loss)</Label>
+                      <Label>{t("packetLoss.monitorForm.alertThreshold", "Alert Threshold (% packet loss)")}</Label>
                       <Input
                         type="number"
                         value={formData.threshold}
@@ -370,7 +374,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                         step="0.1"
                       />
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center gap-2">
                       <Checkbox
                         id="enabled"
                         checked={formData.enabled}
@@ -382,7 +386,7 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                         }
                       />
                       <Label htmlFor="enabled" className="cursor-pointer">
-                        Start monitoring immediately
+                        {t("packetLoss.monitorForm.startImmediately", "Start monitoring immediately")}
                       </Label>
                     </div>
                   </div>
@@ -395,14 +399,14 @@ export const PacketLossMonitorForm: React.FC<PacketLossMonitorFormProps> = ({
                       variant="default"
                       className="flex-1"
                     >
-                      {editingMonitor ? "Update Monitor" : "Create Monitor"}
+                      {editingMonitor ? t("packetLoss.monitorForm.updateMonitor", "Update Monitor") : t("packetLoss.monitorForm.createMonitor", "Create Monitor")}
                     </Button>
                     <Button
                       type="button"
                       onClick={handleClose}
                       variant="secondary"
                     >
-                      Cancel
+                      {t("common.cancel", "Cancel")}
                     </Button>
                   </div>
                 </form>

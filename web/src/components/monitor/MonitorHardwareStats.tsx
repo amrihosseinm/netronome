@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   CpuChipIcon,
@@ -25,6 +26,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
   showOnly,
   showOnlyTemperature = false,
 }) => {
+  const { t } = useTranslation();
   const getProgressColor = (percent: number) => {
     if (percent < 50) return "#34d399"; // emerald-400
     if (percent < 85) return "#d97706"; // amber-600
@@ -56,21 +58,20 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
       {shouldShow("cpu") && (
         <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <CpuChipIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                CPU
+                {t("monitor.hardwareStats.cpu", "CPU")}
               </h3>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
-              {hardwareStats.cpu.cores} cores, {hardwareStats.cpu.threads}{" "}
-              threads
+              {t("monitor.hardwareStats.coresThreads", "{{cores}} cores, {{threads}} threads", { cores: hardwareStats.cpu.cores, threads: hardwareStats.cpu.threads })}
             </div>
           </div>
 
           <div className="space-y-3">
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-600 dark:text-gray-400">Usage</span>
+              <span className="text-gray-600 dark:text-gray-400">{t("monitor.hardwareStats.usage", "Usage")}</span>
               <span className="text-gray-900 dark:text-white font-medium">
                 {hardwareStats.cpu.usage_percent.toFixed(1)}%
               </span>
@@ -92,7 +93,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
             </p>
             {hardwareStats.cpu.load_avg && (
               <p className="text-xs text-gray-500 dark:text-gray-500">
-                Load:{" "}
+                {t("monitor.hardwareStats.load", "Load")}:{" "}
                 {hardwareStats.cpu.load_avg.map((l) => l.toFixed(2)).join(", ")}
               </p>
             )}
@@ -104,10 +105,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
       {shouldShow("memory") && (
         <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <CircleStackIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Memory
+                {t("monitor.hardwareStats.memory", "Memory")}
               </h3>
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
@@ -117,7 +118,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
 
           <div className="space-y-3">
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-600 dark:text-gray-400">Usage</span>
+              <span className="text-gray-600 dark:text-gray-400">{t("monitor.hardwareStats.usage", "Usage")}</span>
               <span className="text-gray-900 dark:text-white font-medium">
                 {hardwareStats.memory.used_percent.toFixed(1)}%
               </span>
@@ -140,7 +141,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                   {formatBytes(hardwareStats.memory.total)}
                 </span>
                 <span className="text-gray-500 dark:text-gray-500">
-                  {formatBytes(hardwareStats.memory.available)} available
+                  {t("monitor.hardwareStats.available", "{{amount}} available", { amount: formatBytes(hardwareStats.memory.available) })}
                 </span>
               </div>
 
@@ -150,7 +151,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                 hardwareStats.memory.zfs_arc > 0) && (
                 <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 space-y-2">
                   <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Memory Breakdown
+                    {t("monitor.hardwareStats.memoryBreakdown", "Memory Breakdown")}
                   </div>
 
                   {/* Calculate memory components */}
@@ -179,28 +180,28 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                             <div
                               className="bg-blue-500 dark:bg-blue-600"
                               style={{ width: `${appPercent}%` }}
-                              title={`Application: ${formatBytes(appMemory)}`}
+                              title={t("monitor.hardwareStats.applicationTooltip", "Application: {{amount}}", { amount: formatBytes(appMemory) })}
                             />
                           )}
                           {cached > 0 && (
                             <div
                               className="bg-emerald-500 dark:bg-emerald-600"
                               style={{ width: `${cachePercent}%` }}
-                              title={`Cache: ${formatBytes(cached)}`}
+                              title={t("monitor.hardwareStats.cacheTooltip", "Cache: {{amount}}", { amount: formatBytes(cached) })}
                             />
                           )}
                           {buffers > 0 && (
                             <div
                               className="bg-amber-500 dark:bg-amber-600"
                               style={{ width: `${buffersPercent}%` }}
-                              title={`Buffers: ${formatBytes(buffers)}`}
+                              title={t("monitor.hardwareStats.buffersTooltip", "Buffers: {{amount}}", { amount: formatBytes(buffers) })}
                             />
                           )}
                           {zfsArc > 0 && (
                             <div
                               className="bg-purple-500 dark:bg-purple-600"
                               style={{ width: `${zfsPercent}%` }}
-                              title={`ZFS ARC: ${formatBytes(zfsArc)}`}
+                              title={t("monitor.hardwareStats.zfsArcTooltip", "ZFS ARC: {{amount}}", { amount: formatBytes(zfsArc) })}
                             />
                           )}
                         </div>
@@ -209,10 +210,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                         <div className="space-y-1">
                           {appMemory > 0 && (
                             <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-blue-500 dark:bg-blue-600 rounded" />
                                 <span className="text-gray-600 dark:text-gray-400">
-                                  Services
+                                  {t("monitor.hardwareStats.services", "Services")}
                                 </span>
                               </div>
                               <span className="text-gray-700 dark:text-gray-300">
@@ -223,10 +224,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
 
                           {cached > 0 && (
                             <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-emerald-500 dark:bg-emerald-600 rounded" />
                                 <span className="text-gray-600 dark:text-gray-400">
-                                  Page Cache
+                                  {t("monitor.hardwareStats.pageCache", "Page Cache")}
                                 </span>
                               </div>
                               <span className="text-gray-700 dark:text-gray-300">
@@ -237,10 +238,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
 
                           {buffers > 0 && (
                             <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-amber-500 dark:bg-amber-600 rounded" />
                                 <span className="text-gray-600 dark:text-gray-400">
-                                  Buffers
+                                  {t("monitor.hardwareStats.buffers", "Buffers")}
                                 </span>
                               </div>
                               <span className="text-gray-700 dark:text-gray-300">
@@ -251,10 +252,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
 
                           {zfsArc > 0 && (
                             <div className="flex items-center justify-between text-xs">
-                              <div className="flex items-center space-x-2">
+                              <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-purple-500 dark:bg-purple-600 rounded" />
                                 <span className="text-gray-600 dark:text-gray-400">
-                                  ZFS ARC
+                                  {t("monitor.hardwareStats.zfsArc", "ZFS ARC")}
                                 </span>
                               </div>
                               <span className="text-gray-700 dark:text-gray-300">
@@ -272,7 +273,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                 <div className="pt-2 mt-2 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex justify-between text-sm mb-1">
                     <span className="text-gray-600 dark:text-gray-400">
-                      Swap
+                      {t("monitor.hardwareStats.swap", "Swap")}
                     </span>
                     <span className="text-gray-900 dark:text-white font-medium">
                       {hardwareStats.memory.swap_percent.toFixed(1)}%
@@ -305,10 +306,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
       {/* Disk Usage */}
       {shouldShow("disk") && hardwareStats.disks.length > 0 && (
         <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center space-x-2 mb-4">
+          <div className="flex items-center gap-2 mb-4">
             <ServerIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Disk Usage
+              {t("monitor.hardwareStats.diskUsage", "Disk Usage")}
             </h3>
           </div>
 
@@ -328,7 +329,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                       {disk.device} • {disk.fstype}
                     </p>
                   </div>
-                  <div className="text-right ml-4">
+                  <div className="text-end ms-4">
                     <p className="text-sm font-medium text-gray-900 dark:text-white">
                       {disk.used_percent.toFixed(1)}%
                     </p>
@@ -360,10 +361,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
         hardwareStats.temperature &&
         hardwareStats.temperature.length > 0 && (
           <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
-            <div className="flex items-center space-x-2 mb-4">
+            <div className="flex items-center gap-2 mb-4">
               <FireIcon className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                Temperature Sensors
+                {t("monitor.hardwareStats.temperatureSensors", "Temperature Sensors")}
               </h3>
             </div>
 
@@ -425,10 +426,10 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                 });
 
                 const categoryOrder = [
-                  { key: "cpu", title: "CPU" },
-                  { key: "storage", title: "Storage" },
-                  { key: "power", title: "Power & Battery" },
-                  { key: "system", title: "System" },
+                  { key: "cpu", title: t("monitor.hardwareStats.cpu", "CPU") },
+                  { key: "storage", title: t("monitor.hardwareStats.storage", "Storage") },
+                  { key: "power", title: t("monitor.hardwareStats.powerAndBattery", "Power & Battery") },
+                  { key: "system", title: t("monitor.hardwareStats.system", "System") },
                 ];
 
                 return categoryOrder
@@ -524,7 +525,7 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                                     {getSensorDisplay()}
                                   </p>
                                   <p
-                                    className={`text-xs font-medium ml-2 ${
+                                    className={`text-xs font-medium ms-2 ${
                                       isHot
                                         ? "text-red-600 dark:text-red-400"
                                         : isWarm
@@ -553,8 +554,8 @@ export const MonitorHardwareStats: React.FC<MonitorHardwareStatsProps> = ({
                                   {temp.critical &&
                                     temp.critical > 0 &&
                                     temp.critical < 1000 && (
-                                      <span className={getModelName() ? "ml-2" : ""}>
-                                        Max: {temp.critical.toFixed(0)}°C
+                                      <span className={getModelName() ? "ms-2" : ""}>
+                                        {t("monitor.hardwareStats.max", "Max")}: {temp.critical.toFixed(0)}°C
                                       </span>
                                     )}
                                 </div>

@@ -13,6 +13,7 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/Button";
 
@@ -40,6 +41,7 @@ export function IperfServerModal({
   confirmStyle = "primary",
   serverDetails,
 }: IperfServerModalProps) {
+  const { t } = useTranslation();
   const [serverName, setServerName] = useState("");
 
   return (
@@ -62,17 +64,17 @@ export function IperfServerModal({
             <>
               <p className="text-gray-600 dark:text-gray-400 text-sm">{message}</p>
               <div className="grid gap-3">
-                <Label htmlFor="serverName">Server Name</Label>
+                <Label htmlFor="serverName">{t("speedtest.serverName", "Server Name")}</Label>
                 <Input
                   id="serverName"
                   value={serverName}
                   onChange={(e) => setServerName(e.target.value)}
-                  placeholder="Enter a name for this server"
+                  placeholder={t("speedtest.iperfServerModal.namePlaceholder", "Enter a name for this server")}
                   autoFocus
                 />
               </div>
               <div className="grid gap-3">
-                <Label>Server Host</Label>
+                <Label>{t("speedtest.serverHost", "Server Host")}</Label>
                 <Input
                   value={serverDetails.host}
                   placeholder="iperf.example.com"
@@ -80,7 +82,7 @@ export function IperfServerModal({
                 />
               </div>
               <div className="grid gap-3">
-                <Label>Server Port</Label>
+                <Label>{t("speedtest.serverPort", "Server Port")}</Label>
                 <Input value={serverDetails.port} readOnly />
               </div>
             </>
@@ -91,7 +93,7 @@ export function IperfServerModal({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{t("common.cancel", "Cancel")}</Button>
           </DialogClose>
           <Button
             disabled={serverDetails && !serverName.trim()}

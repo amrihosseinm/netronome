@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   ServerIcon,
@@ -27,6 +28,7 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
   systemInfo,
   isOffline = false,
 }) => {
+  const { t } = useTranslation();
   const formatUptime = (seconds: number): string => {
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
@@ -56,31 +58,31 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
       transition={{ duration: 0.3 }}
       className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800"
     >
-      <div className="flex items-center space-x-2 sm:space-x-3 mb-4">
+      <div className="flex items-center gap-2 sm:gap-3 mb-4">
         <InformationCircleIcon className="h-5 w-5 sm:h-6 sm:w-6 text-gray-900 dark:text-white" />
         <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-          System Information
+          {t("monitor.systemInfo.title", "System Information")}
         </h3>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Hostname */}
-        <div className="flex items-start space-x-3">
+        <div className="flex items-start gap-3">
           <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/20 flex-shrink-0">
             <ServerIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Hostname
+              {t("monitor.systemInfo.hostname", "Hostname")}
             </p>
-            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+            <p className="text-sm font-semibold text-gray-900 dark:text-white" dir="ltr">
               {systemInfo.hostname}
             </p>
           </div>
         </div>
 
         {/* Kernel */}
-        <div className="flex items-start space-x-3">
+        <div className="flex items-start gap-3">
           <div className="rounded-full bg-green-100 p-2 dark:bg-green-900/20 flex-shrink-0">
             {systemInfo.kernel.toLowerCase().includes("darwin") ? (
               <FontAwesomeIcon
@@ -98,7 +100,7 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
           </div>
           <div>
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Kernel
+              {t("monitor.systemInfo.kernel", "Kernel")}
             </p>
             <p className="text-sm font-semibold text-gray-900 dark:text-white">
               {systemInfo.kernel}
@@ -107,13 +109,13 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
         </div>
 
         {/* Uptime */}
-        <div className="flex items-start space-x-3">
+        <div className="flex items-start gap-3">
           <div className="rounded-full bg-purple-100 p-2 dark:bg-purple-900/20 flex-shrink-0">
             <ClockIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
           </div>
           <div>
             <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
-              Uptime
+              {t("monitor.systemInfo.uptime", "Uptime")}
             </p>
             <p className="text-sm font-semibold text-gray-900 dark:text-white">
               {formatUptime(systemInfo.uptime)}
@@ -123,13 +125,13 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
 
         {/* Agent Version */}
         {systemInfo.agent_version && (
-          <div className="flex items-start space-x-3">
+          <div className="flex items-start gap-3">
             <div className="rounded-full bg-orange-100 p-2 dark:bg-orange-900/20 flex-shrink-0">
               <CodeBracketIcon className="h-5 w-5 text-orange-600 dark:text-orange-400" />
             </div>
             <div>
               <p className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                Agent Version
+                {t("monitor.systemInfo.agentVersion", "Agent Version")}
               </p>
               <p className="text-sm font-semibold text-gray-900 dark:text-white">
                 {systemInfo.agent_version}
@@ -143,7 +145,7 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
       {activeInterfaces.length > 0 && (
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
           <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-            Network Interfaces
+            {t("monitor.systemInfo.networkInterfaces", "Network Interfaces")}
           </h4>
           <div className="space-y-2">
             {activeInterfaces.map((iface) => (
@@ -160,12 +162,12 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
       {/* Agent Health Summary */}
       <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-800">
         <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-          Agent Health
+          {t("monitor.systemInfo.agentHealth", "Agent Health")}
         </h4>
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">Status</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">{t("monitor.systemInfo.status", "Status")}</p>
               <p
                 className={`text-sm font-medium ${
                   isOffline
@@ -173,13 +175,13 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
                     : "text-emerald-600 dark:text-emerald-400"
                 }`}
               >
-                {isOffline ? "Offline" : "Connected"}
+                {isOffline ? t("monitor.systemInfo.offline", "Offline") : t("monitor.systemInfo.connected", "Connected")}
               </p>
             </div>
             {!isOffline && (
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Active Since
+                  {t("monitor.systemInfo.activeSince", "Active Since")}
                 </p>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                   {formatUptime(systemInfo.uptime)}
@@ -188,7 +190,7 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
             )}
             <div>
               <p className="text-xs text-gray-600 dark:text-gray-400">
-                {isOffline ? "Last Seen" : "Last Sync"}
+                {isOffline ? t("monitor.systemInfo.lastSeen", "Last Seen") : t("monitor.systemInfo.lastSync", "Last Sync")}
               </p>
               <p className="text-sm font-medium text-gray-900 dark:text-white">
                 {formatters.time(systemInfo.updated_at)}
@@ -197,10 +199,10 @@ export const MonitorSystemInfo: React.FC<MonitorSystemInfoProps> = ({
             {isOffline && systemInfo.from_cache && (
               <div>
                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Data Source
+                  {t("monitor.systemInfo.dataSource", "Data Source")}
                 </p>
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Cached
+                  {t("monitor.systemInfo.cached", "Cached")}
                 </p>
               </div>
             )}
@@ -220,11 +222,12 @@ const InterfaceCard: React.FC<InterfaceCardProps> = ({
   interface: iface,
   isOffline = false,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-gray-900 dark:text-white">
               {iface.alias || iface.name}
             </span>
@@ -235,7 +238,7 @@ const InterfaceCard: React.FC<InterfaceCardProps> = ({
             )}
             {iface.link_speed === -1 ? (
               <span className="text-xs bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">
-                Virtual
+                {t("monitor.systemInfo.virtual", "Virtual")}
               </span>
             ) : iface.link_speed > 0 ? (
               <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">
@@ -243,15 +246,15 @@ const InterfaceCard: React.FC<InterfaceCardProps> = ({
               </span>
             ) : null}
           </div>
-          <div className="mt-1 flex items-center space-x-3">
+          <div className="mt-1 flex items-center gap-3">
             {iface.ip_address && (
               <span className="text-xs text-gray-600 dark:text-gray-400">
-                IP: {iface.ip_address}
+                {t("monitor.systemInfo.ip", "IP")}: <span dir="ltr">{iface.ip_address}</span>
               </span>
             )}
             {iface.bytes_total > 0 && (
               <span className="text-xs text-gray-600 dark:text-gray-400">
-                Total: {formatBytes(iface.bytes_total)}
+                {t("monitor.systemInfo.total", "Total")}: {formatBytes(iface.bytes_total)}
               </span>
             )}
           </div>

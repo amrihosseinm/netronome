@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   PencilIcon,
@@ -61,6 +62,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
   onDeleteAgent,
   isLoading,
 }) => {
+  const { t } = useTranslation();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [agentToDelete, setAgentToDelete] = React.useState<MonitorAgent | null>(
     null
@@ -109,7 +111,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
   const columns: ColumnDef<AgentTableData>[] = [
     {
       accessorKey: "name",
-      header: createSortableHeader("Agent"),
+      header: createSortableHeader(t("monitor.agentList.agent", "Agent")),
       size: 200,
       cell: ({ row }) => {
         const agent = row.original;
@@ -128,7 +130,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
     },
     {
       id: "status",
-      header: () => <div className="hidden sm:block text-left">Status</div>,
+      header: () => <div className="hidden sm:block text-start">{t("monitor.agentList.status", "Status")}</div>,
       size: 120,
       enableHiding: true,
       cell: ({ row }) => {
@@ -142,7 +144,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
     },
     {
       accessorKey: "url",
-      header: () => <div className="hidden lg:block">Connection</div>,
+      header: () => <div className="hidden lg:block">{t("monitor.agentList.connection", "Connection")}</div>,
       size: 300,
       enableHiding: true,
       cell: ({ row }) => {
@@ -161,7 +163,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Connected through Tailscale</p>
+                    <p>{t("monitor.agentList.connectedThroughTailscale", "Connected through Tailscale")}</p>
                   </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -171,7 +173,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
                     </div>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Encrypted via Tailscale</p>
+                    <p>{t("monitor.agentList.encryptedViaTailscale", "Encrypted via Tailscale")}</p>
                   </TooltipContent>
                 </Tooltip>
               </>
@@ -183,7 +185,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Authentication enabled</p>
+                  <p>{t("monitor.agentList.authenticationEnabled", "Authentication enabled")}</p>
                 </TooltipContent>
               </Tooltip>
             ) : (
@@ -194,11 +196,11 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>No authentication</p>
+                  <p>{t("monitor.agentList.noAuthentication", "No authentication")}</p>
                 </TooltipContent>
               </Tooltip>
             )}
-            <span className="truncate">
+            <span className="truncate" dir="ltr">
               {agent.url.replace(/\/events\?stream=live-data$/, "")}
             </span>
           </div>
@@ -207,7 +209,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
     },
     {
       id: "bandwidth",
-      header: () => <div className="hidden sm:block">Current Bandwidth</div>,
+      header: () => <div className="hidden sm:block">{t("monitor.agentList.currentBandwidth", "Current Bandwidth")}</div>,
       size: 180,
       enableHiding: true,
       cell: ({ row }) => {
@@ -221,7 +223,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
     },
     {
       id: "actions",
-      header: () => <div className="text-right pr-1 sm:pr-4">Actions</div>,
+      header: () => <div className="text-end pe-1 sm:pe-4">{t("monitor.agentList.actions", "Actions")}</div>,
       size: 100,
       cell: ({ row }) => {
         const agent = row.original;
@@ -258,20 +260,20 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
         <CardHeader className="py-2 sm:py-3 px-3 sm:px-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
             <CardTitle className="text-sm sm:text-base">
-              Netronome Agents
+              {t("monitor.agentList.title", "Netronome Agents")}
             </CardTitle>
             {!isLoading && agents.length > 0 && (
               <div className="relative w-full sm:w-72">
                 <Input
-                  placeholder="Filter agents..."
+                  placeholder={t("monitor.agentList.filterPlaceholder", "Filter agents...")}
                   value={filterValue}
                   onChange={(e) => setFilterValue(e.target.value)}
-                  className="h-8 sm:h-9 pr-8 text-sm"
+                  className="h-8 sm:h-9 pe-8 text-sm"
                 />
                 {filterValue && (
                   <button
                     onClick={() => setFilterValue("")}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    className="absolute end-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
                     <svg
                       className="h-4 w-4"
@@ -297,7 +299,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
           {isLoading ? (
             <div className="p-8 text-center">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Loading agents...
+                {t("monitor.agentList.loadingAgents", "Loading agents...")}
               </p>
             </div>
           ) : !agents || agents.length === 0 ? (
@@ -307,10 +309,10 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
                 className="mx-auto h-10 w-10 text-gray-400"
               />
               <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-                No agents configured
+                {t("monitor.agentList.noAgentsConfigured", "No agents configured")}
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500">
-                Add an agent to start monitoring bandwidth
+                {t("monitor.agentList.noAgentsConfiguredHint", "Add an agent to start monitoring bandwidth")}
               </p>
             </div>
           ) : (
@@ -323,7 +325,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
                 pageSize={10}
                 className="px-2 sm:px-4 pb-2 sm:pb-4"
                 tableClassName="min-w-full sm:min-w-[600px]"
-                noDataMessage="No agents found."
+                noDataMessage={t("monitor.agentList.noAgentsFound", "No agents found.")}
                 onRowClick={(agent) => onSelectAgent(agent)}
                 filterColumn={undefined} // Disable built-in filter since we moved it to header
               />
@@ -366,6 +368,7 @@ export const MonitorAgentList: React.FC<MonitorAgentListProps> = ({
 
 // Cell component for agent status
 const AgentStatusCell: React.FC<{ agent: AgentTableData }> = ({ agent }) => {
+  const { t } = useTranslation();
   const { status, isLoadingStatus } = useMonitorAgent({
     agent,
     includeNativeData: true,
@@ -376,7 +379,7 @@ const AgentStatusCell: React.FC<{ agent: AgentTableData }> = ({ agent }) => {
     return (
       <Badge variant="secondary" className="gap-1.5">
         <span className="inline-flex rounded-full h-2 w-2 bg-gray-500"></span>
-        Disabled
+        {t("monitor.agentList.disabled", "Disabled")}
       </Badge>
     );
   }
@@ -392,7 +395,7 @@ const AgentStatusCell: React.FC<{ agent: AgentTableData }> = ({ agent }) => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-500 dark:bg-gray-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-gray-600 dark:bg-gray-300"></span>
         </span>
-        Checking...
+        {t("monitor.agentList.checking", "Checking...")}
       </Badge>
     );
   }
@@ -404,7 +407,7 @@ const AgentStatusCell: React.FC<{ agent: AgentTableData }> = ({ agent }) => {
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
         </span>
-        Online
+        {t("monitor.agentList.online", "Online")}
       </Badge>
     );
   }
@@ -412,7 +415,7 @@ const AgentStatusCell: React.FC<{ agent: AgentTableData }> = ({ agent }) => {
   return (
     <Badge variant="destructive" className="gap-1.5">
       <span className="inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-      Disconnected
+      {t("monitor.agentList.disconnected", "Disconnected")}
     </Badge>
   );
 };
@@ -466,6 +469,7 @@ const AgentActionsCell: React.FC<AgentActionsCellProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { t } = useTranslation();
   // Featured agents management with local state for instant feedback
   const getFeaturedAgentIds = (): number[] => {
     try {
@@ -513,8 +517,8 @@ const AgentActionsCell: React.FC<AgentActionsCellProps> = ({
       const newFeatured = currentFeatured.filter((id) => id !== agent.id);
       setFeaturedAgentIds(newFeatured);
       setIsFeatured(false);
-      showToast("Agent unfeatured", "success", {
-        description: `${agent.name} removed from dashboard`,
+      showToast(t("monitor.agentList.agentUnfeatured", "Agent unfeatured"), "success", {
+        description: t("monitor.agentList.removedFromDashboard", "{{name}} removed from dashboard", { name: agent.name }),
       });
     } else {
       const validCurrentFeatured = Array.isArray(currentFeatured)
@@ -531,8 +535,8 @@ const AgentActionsCell: React.FC<AgentActionsCellProps> = ({
       }
 
       if (existingFeatured.length >= 3) {
-        showToast("Feature limit reached", "error", {
-          description: "You can only feature up to 3 agents at a time",
+        showToast(t("monitor.agentList.featureLimitReached", "Feature limit reached"), "error", {
+          description: t("monitor.agentList.featureLimitDescription", "You can only feature up to 3 agents at a time"),
         });
         return;
       }
@@ -545,8 +549,8 @@ const AgentActionsCell: React.FC<AgentActionsCellProps> = ({
       const newFeatured = [...existingFeatured, agent.id];
       setFeaturedAgentIds(newFeatured);
       setIsFeatured(true);
-      showToast("Agent featured", "success", {
-        description: `${agent.name} added to dashboard`,
+      showToast(t("monitor.agentList.agentFeatured", "Agent featured"), "success", {
+        description: t("monitor.agentList.addedToDashboard", "{{name}} added to dashboard", { name: agent.name }),
       });
     }
 
@@ -580,7 +584,7 @@ const AgentActionsCell: React.FC<AgentActionsCellProps> = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{isFeatured ? "Remove from dashboard" : "Feature on dashboard"}</p>
+          <p>{isFeatured ? t("monitor.agentList.removeFromDashboard", "Remove from dashboard") : t("monitor.agentList.featureOnDashboard", "Feature on dashboard")}</p>
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -598,7 +602,7 @@ const AgentActionsCell: React.FC<AgentActionsCellProps> = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Edit Agent</p>
+          <p>{t("monitor.agentList.editAgent", "Edit Agent")}</p>
         </TooltipContent>
       </Tooltip>
       <Tooltip>
@@ -616,7 +620,7 @@ const AgentActionsCell: React.FC<AgentActionsCellProps> = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Delete Agent</p>
+          <p>{t("monitor.agentList.deleteAgent", "Delete Agent")}</p>
         </TooltipContent>
       </Tooltip>
     </div>

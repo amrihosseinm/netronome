@@ -4,6 +4,7 @@
  */
 
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   ArrowDownIcon,
@@ -25,6 +26,7 @@ interface MonitorBandwidthTabProps {
 export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
   agent,
 }) => {
+  const { t } = useTranslation();
   const [selectedTimeRange, setSelectedTimeRange] = useState<
     "6h" | "12h" | "24h" | "48h" | "7d" | "30d"
   >("24h");
@@ -37,17 +39,18 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
   // Process bandwidth data based on selected time range
   const chartData = useMemo(() => {
     if (!nativeData?.interfaces?.[0]?.traffic) {
-      return { data: [], title: "No Data", timeFormat: "hour" as const };
+      return { data: [], title: t("monitor.bandwidthTab.noData", "No Data"), timeFormat: "hour" as const };
     }
 
     const traffic = nativeData.interfaces[0].traffic;
 
     switch (selectedTimeRange) {
       case "6h": {
+        const title = t("monitor.bandwidthTab.hourlyBandwidth", "Hourly Bandwidth ({{hours}} hours)", { hours: 6 });
         if (!traffic.hour)
           return {
             data: [],
-            title: "Hourly Bandwidth (6 hours)",
+            title,
             timeFormat: "hour" as const,
           };
         return {
@@ -61,15 +64,16 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             rx: hour.rx,
             tx: hour.tx,
           })),
-          title: "Hourly Bandwidth (6 hours)",
+          title,
           timeFormat: "hour" as const,
         };
       }
       case "12h": {
+        const title = t("monitor.bandwidthTab.hourlyBandwidth", "Hourly Bandwidth ({{hours}} hours)", { hours: 12 });
         if (!traffic.hour)
           return {
             data: [],
-            title: "Hourly Bandwidth (12 hours)",
+            title,
             timeFormat: "hour" as const,
           };
         return {
@@ -83,15 +87,16 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             rx: hour.rx,
             tx: hour.tx,
           })),
-          title: "Hourly Bandwidth (12 hours)",
+          title,
           timeFormat: "hour" as const,
         };
       }
       case "24h": {
+        const title = t("monitor.bandwidthTab.hourlyBandwidth", "Hourly Bandwidth ({{hours}} hours)", { hours: 24 });
         if (!traffic.hour)
           return {
             data: [],
-            title: "Hourly Bandwidth (24 hours)",
+            title,
             timeFormat: "hour" as const,
           };
         return {
@@ -105,15 +110,16 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             rx: hour.rx,
             tx: hour.tx,
           })),
-          title: "Hourly Bandwidth (24 hours)",
+          title,
           timeFormat: "hour" as const,
         };
       }
       case "48h": {
+        const title = t("monitor.bandwidthTab.hourlyBandwidth", "Hourly Bandwidth ({{hours}} hours)", { hours: 48 });
         if (!traffic.hour)
           return {
             data: [],
-            title: "Hourly Bandwidth (48 hours)",
+            title,
             timeFormat: "hour" as const,
           };
         return {
@@ -127,15 +133,16 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             rx: hour.rx,
             tx: hour.tx,
           })),
-          title: "Hourly Bandwidth (48 hours)",
+          title,
           timeFormat: "hour" as const,
         };
       }
       case "7d": {
+        const title = t("monitor.bandwidthTab.dailyBandwidth", "Daily Bandwidth ({{days}} days)", { days: 7 });
         if (!traffic.day)
           return {
             data: [],
-            title: "Daily Bandwidth (7 days)",
+            title,
             timeFormat: "day" as const,
           };
         return {
@@ -148,15 +155,16 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             rx: day.rx,
             tx: day.tx,
           })),
-          title: "Daily Bandwidth (7 days)",
+          title,
           timeFormat: "day" as const,
         };
       }
       case "30d": {
+        const title = t("monitor.bandwidthTab.dailyBandwidth", "Daily Bandwidth ({{days}} days)", { days: 30 });
         if (!traffic.day)
           return {
             data: [],
-            title: "Daily Bandwidth (30 days)",
+            title,
             timeFormat: "day" as const,
           };
         return {
@@ -169,12 +177,12 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             rx: day.rx,
             tx: day.tx,
           })),
-          title: "Daily Bandwidth (30 days)",
+          title,
           timeFormat: "day" as const,
         };
       }
     }
-  }, [nativeData, selectedTimeRange]);
+  }, [nativeData, selectedTimeRange, t]);
 
   if (!nativeData) {
     return (
@@ -185,7 +193,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
         className="text-center py-12"
       >
         <p className="text-lg text-gray-500 dark:text-gray-400">
-          Loading bandwidth data...
+          {t("monitor.bandwidthTab.loadingBandwidthData", "Loading bandwidth data...")}
         </p>
       </motion.div>
     );
@@ -198,7 +206,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
     <div className="space-y-4 sm:space-y-6">
       {/* Offline Banner */}
       {isOffline && isFromCache && (
-        <MonitorOfflineBanner message="Showing cached bandwidth data. Real-time monitoring unavailable." />
+        <MonitorOfflineBanner message={t("monitor.bandwidthTab.offlineBannerMessage", "Showing cached bandwidth data. Real-time monitoring unavailable.")} />
       )}
 
       {chartData.data.length > 0 ? (
@@ -220,11 +228,10 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             <ExclamationTriangleIcon className="h-8 w-8 sm:h-10 sm:w-10 text-amber-500 dark:text-amber-400" />
           </div>
           <p className="text-base sm:text-lg text-gray-500 dark:text-gray-400">
-            No bandwidth data available
+            {t("monitor.bandwidthTab.noBandwidthDataAvailable", "No bandwidth data available")}
           </p>
           <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-500 mt-1.5 sm:mt-2">
-            The agent may have just been added or monitor hasn't collected
-            enough data yet.
+            {t("monitor.bandwidthTab.noBandwidthDataHint", "The agent may have just been added or monitor hasn't collected enough data yet.")}
           </p>
         </motion.div>
       )}
@@ -237,10 +244,10 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
           transition={{ duration: 0.3, delay: 0.2 }}
           className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-4 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-800"
         >
-          <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <CalendarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600 dark:text-purple-400" />
             <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-              Total Statistics
+              {t("monitor.bandwidthTab.totalStatistics", "Total Statistics")}
             </h3>
           </div>
 
@@ -254,10 +261,10 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                   transition={{ duration: 0.3, delay: 0.25 }}
                   className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4"
                 >
-                  <div className="flex items-center space-x-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <ArrowDownIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      All-time Download
+                      {t("monitor.bandwidthTab.allTimeDownload", "All-time Download")}
                     </span>
                   </div>
                   <p className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
@@ -271,10 +278,10 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                   transition={{ duration: 0.3, delay: 0.3 }}
                   className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-4"
                 >
-                  <div className="flex items-center space-x-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <ArrowUpIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                      All-time Upload
+                      {t("monitor.bandwidthTab.allTimeUpload", "All-time Upload")}
                     </span>
                   </div>
                   <p className="text-xl font-bold text-gray-900 dark:text-white">
@@ -288,10 +295,10 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                   transition={{ duration: 0.3, delay: 0.35 }}
                   className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4"
                 >
-                  <div className="flex items-center space-x-2 mb-2">
+                  <div className="flex items-center gap-2 mb-2">
                     <CalendarIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
                     <span className="text-sm font-medium text-purple-600 dark:text-purple-400">
-                      Combined Total
+                      {t("monitor.bandwidthTab.combinedTotal", "Combined Total")}
                     </span>
                   </div>
                   <p className="text-xl font-bold text-gray-900 dark:text-white">
@@ -316,22 +323,22 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                 className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 sm:p-4"
               >
                 <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white mb-2 sm:mb-3">
-                  Today
+                  {t("monitor.bandwidthTab.today", "Today")}
                 </h4>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-1.5 sm:space-x-2">
+                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 sm:gap-2">
                       <ArrowDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
-                      <span>Downloaded</span>
+                      <span>{t("monitor.bandwidthTab.downloaded", "Downloaded")}</span>
                     </span>
                     <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                       {formatBytes(nativeData.interfaces[0].traffic.day[0].rx)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-1.5 sm:space-x-2">
+                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 sm:gap-2">
                       <ArrowUpIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Uploaded</span>
+                      <span>{t("monitor.bandwidthTab.uploaded", "Uploaded")}</span>
                     </span>
                     <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                       {formatBytes(nativeData.interfaces[0].traffic.day[0].tx)}
@@ -340,7 +347,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                   <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex justify-between items-center">
                       <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
-                        Total
+                        {t("monitor.bandwidthTab.total", "Total")}
                       </span>
                       <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                         {formatBytes(
@@ -363,13 +370,13 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                 className="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 sm:p-4"
               >
                 <h4 className="text-sm sm:text-base font-medium text-gray-900 dark:text-white mb-2 sm:mb-3">
-                  This Month
+                  {t("monitor.bandwidthTab.thisMonth", "This Month")}
                 </h4>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-1.5 sm:space-x-2">
+                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 sm:gap-2">
                       <ArrowDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-600 dark:text-blue-400" />
-                      <span>Downloaded</span>
+                      <span>{t("monitor.bandwidthTab.downloaded", "Downloaded")}</span>
                     </span>
                     <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                       {formatBytes(
@@ -378,9 +385,9 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center space-x-1.5 sm:space-x-2">
+                    <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 sm:gap-2">
                       <ArrowUpIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-600 dark:text-emerald-400" />
-                      <span>Uploaded</span>
+                      <span>{t("monitor.bandwidthTab.uploaded", "Uploaded")}</span>
                     </span>
                     <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
                       {formatBytes(
@@ -391,7 +398,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                   <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex justify-between items-center">
                       <span className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
-                        Total
+                        {t("monitor.bandwidthTab.total", "Total")}
                       </span>
                       <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                         {formatBytes(
@@ -416,10 +423,10 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
           transition={{ duration: 0.3, delay: 0.3 }}
           className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-4 sm:p-6 shadow-lg border border-gray-200 dark:border-gray-800"
         >
-          <div className="flex items-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <ChartBarIcon className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
             <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-              Peak Times & Averages
+              {t("monitor.bandwidthTab.peakTimesAndAverages", "Peak Times & Averages")}
             </h3>
           </div>
 
@@ -427,7 +434,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             {/* Peak Times */}
             <div className="space-y-4">
               <h4 className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                Peak Bandwidth
+                {t("monitor.bandwidthTab.peakBandwidth", "Peak Bandwidth")}
               </h4>
 
               {peakStats && (
@@ -439,9 +446,9 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                     className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3"
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-blue-600 dark:text-blue-400 flex items-center space-x-2">
+                      <span className="text-sm text-blue-600 dark:text-blue-400 flex items-center gap-2">
                         <ArrowDownIcon className="h-4 w-4" />
-                        <span>Peak Download</span>
+                        <span>{t("monitor.bandwidthTab.peakDownload", "Peak Download")}</span>
                       </span>
                       <span className="text-sm font-bold text-gray-900 dark:text-white">
                         {peakStats.peak_rx_string}
@@ -456,9 +463,9 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                     className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3"
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center space-x-2">
+                      <span className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
                         <ArrowUpIcon className="h-4 w-4" />
-                        <span>Peak Upload</span>
+                        <span>{t("monitor.bandwidthTab.peakUpload", "Peak Upload")}</span>
                       </span>
                       <span className="text-sm font-bold text-gray-900 dark:text-white">
                         {peakStats.peak_tx_string}
@@ -472,7 +479,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
             {/* Averages */}
             <div className="space-y-4">
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Daily Averages
+                {t("monitor.bandwidthTab.dailyAverages", "Daily Averages")}
               </h4>
 
               {nativeData.interfaces[0].traffic.day &&
@@ -497,7 +504,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                       >
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Avg Daily Download
+                            {t("monitor.bandwidthTab.avgDailyDownload", "Avg Daily Download")}
                           </span>
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
                             {formatBytes(avgRx)}
@@ -513,7 +520,7 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                       >
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-gray-600 dark:text-gray-400">
-                            Avg Daily Upload
+                            {t("monitor.bandwidthTab.avgDailyUpload", "Avg Daily Upload")}
                           </span>
                           <span className="text-sm font-medium text-gray-900 dark:text-white">
                             {formatBytes(avgTx)}
@@ -529,14 +536,14 @@ export const MonitorBandwidthTab: React.FC<MonitorBandwidthTabProps> = ({
                       >
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-purple-600 dark:text-purple-400 font-medium">
-                            Avg Daily Total
+                            {t("monitor.bandwidthTab.avgDailyTotal", "Avg Daily Total")}
                           </span>
                           <span className="text-sm font-bold text-gray-900 dark:text-white">
                             {formatBytes(avgTotal)}
                           </span>
                         </div>
                         <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                          Based on last 7 days
+                          {t("monitor.bandwidthTab.basedOnLast7Days", "Based on last 7 days")}
                         </p>
                       </motion.div>
                     </div>

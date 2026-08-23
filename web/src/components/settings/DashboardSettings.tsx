@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { PresentationChartLineIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import { showToast } from "@/components/common/Toast";
 const ROW_OPTIONS = [10, 20, 50, 100];
 
 export const DashboardSettings: React.FC = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-settings"],
@@ -38,13 +40,13 @@ export const DashboardSettings: React.FC = () => {
       queryClient.setQueryData(["dashboard-settings"], updated);
       queryClient.invalidateQueries({ queryKey: ["history"] });
       setPendingRows(null);
-      showToast("Dashboard settings saved", "success", {
-        description: "Recent Speedtests row count updated",
+      showToast(t("settings.dashboardSettings.savedTitle", "Dashboard settings saved"), "success", {
+        description: t("settings.dashboardSettings.savedDescription", "Recent Speedtests row count updated"),
       });
     },
     onError: (err: unknown) => {
       const message = err instanceof Error ? err.message : undefined;
-      showToast("Failed to save dashboard settings", "error", {
+      showToast(t("settings.dashboardSettings.saveFailedTitle", "Failed to save dashboard settings"), "error", {
         description: message,
       });
     },
@@ -65,7 +67,7 @@ export const DashboardSettings: React.FC = () => {
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-gray-300 dark:border-gray-700 border-t-blue-500 dark:border-t-blue-400 rounded-full mx-auto mb-4 animate-spin" />
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Loading dashboard settings...
+            {t("settings.dashboardSettings.loading", "Loading dashboard settings...")}
           </p>
         </div>
       </div>
@@ -78,10 +80,10 @@ export const DashboardSettings: React.FC = () => {
         <div>
           <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <PresentationChartLineIcon className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-            Dashboard Settings
+            {t("settings.dashboardSettings.title", "Dashboard Settings")}
           </h3>
           <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Configure recent speedtest history display behavior
+            {t("settings.dashboardSettings.description", "Configure recent speedtest history display behavior")}
           </p>
         </div>
 
@@ -95,10 +97,10 @@ export const DashboardSettings: React.FC = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <CheckIcon className="w-4 h-4" />
-              Save Changes
+              {t("common.saveChanges", "Save Changes")}
             </Button>
             <Button onClick={cancelChanges} variant="secondary" disabled={mutation.isPending}>
-              Cancel
+              {t("common.cancel", "Cancel")}
             </Button>
           </div>
         )}
@@ -108,25 +110,25 @@ export const DashboardSettings: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <PresentationChartLineIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            Recent Speedtests
+            {t("settings.dashboardSettings.recentSpeedtestsCardTitle", "Recent Speedtests")}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Rows shown on dashboard
+              {t("settings.dashboardSettings.rowsShownLabel", "Rows shown on dashboard")}
             </label>
             <Select
               value={String(selectedRows)}
               onValueChange={updateRecentRows}
             >
               <SelectTrigger className="w-full sm:w-[240px]">
-                <SelectValue placeholder="Select row count" />
+                <SelectValue placeholder={t("settings.dashboardSettings.selectRowCountPlaceholder", "Select row count")} />
               </SelectTrigger>
               <SelectContent>
                 {ROW_OPTIONS.map((option) => (
                   <SelectItem key={option} value={String(option)}>
-                    {option} rows
+                    {option} {t("settings.dashboardSettings.rowsUnit", "rows")}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -134,7 +136,7 @@ export const DashboardSettings: React.FC = () => {
           </div>
 
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Controls how many recent speedtests are loaded and shown in Dashboard {'>'} Recent Speedtests.
+            {t("settings.dashboardSettings.rowsDescription", "Controls how many recent speedtests are loaded and shown in Dashboard > Recent Speedtests.")}
           </p>
         </CardContent>
       </Card>

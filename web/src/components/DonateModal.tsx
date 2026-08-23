@@ -19,6 +19,7 @@ import { SiBuymeacoffee, SiKofi, SiLitecoin, SiMonero } from "react-icons/si";
 import { HeartIcon } from "@heroicons/react/24/solid";
 import s0upAvatar from "@/assets/sponsors/s0up4200.png";
 import zze0sAvatar from "@/assets/sponsors/zze0s.png";
+import { useTranslation } from "react-i18next";
 
 // Polar SVG component
 const PolarIcon: React.FC<{ className?: string }> = ({ className = "w-full h-full" }) => (
@@ -127,12 +128,13 @@ function PlatformLinkItem({ link }: { link: PlatformLink }) {
     >
       {link.icon}
       <span className="truncate">{link.name}</span>
-      <ExternalLink className="h-3 w-3 ml-auto flex-shrink-0 text-gray-400" />
+      <ExternalLink className="h-3 w-3 ms-auto flex-shrink-0 text-gray-400" />
     </a>
   );
 }
 
 function CryptoAddressRow({ crypto }: { crypto: CryptoAddress }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = useCallback(async () => {
@@ -157,7 +159,11 @@ function CryptoAddressRow({ crypto }: { crypto: CryptoAddress }) {
         size="icon"
         className="h-7 w-7 flex-shrink-0"
         onClick={handleCopy}
-        aria-label={copied ? `${crypto.symbol} address copied` : `Copy ${crypto.symbol} address`}
+        aria-label={
+          copied
+            ? t("donate.addressCopied", "{{symbol}} address copied", { symbol: crypto.symbol })
+            : t("donate.copyAddress", "Copy {{symbol}} address", { symbol: crypto.symbol })
+        }
       >
         {copied ? (
           <Check className="h-3.5 w-3.5 text-emerald-500" />
@@ -170,6 +176,7 @@ function CryptoAddressRow({ crypto }: { crypto: CryptoAddress }) {
 }
 
 function MaintainerSection({ maintainer }: { maintainer: Maintainer }) {
+  const { t } = useTranslation();
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2.5">
@@ -192,7 +199,7 @@ function MaintainerSection({ maintainer }: { maintainer: Maintainer }) {
       {maintainer.crypto.length > 0 && (
         <div className="space-y-1.5">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-            Crypto
+            {t("donate.crypto", "Crypto")}
           </span>
           <div className="space-y-1">
             {maintainer.crypto.map((c) => (
@@ -211,17 +218,18 @@ interface DonateModalProps {
 }
 
 export function DonateModal({ isOpen, onClose }: DonateModalProps) {
+  const { t } = useTranslation();
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
         <DialogHeader>
-          <DialogTitle>Support Netronome</DialogTitle>
+          <DialogTitle>{t("donate.supportNetronome", "Support Netronome")}</DialogTitle>
           <DialogDescription>
-            Your sponsorship supports features, infrastructure, and community.
+            {t("donate.sponsorshipDescription", "Your sponsorship supports features, infrastructure, and community.")}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="max-h-[60vh] overflow-y-auto space-y-5 pr-1">
+        <div className="max-h-[60vh] overflow-y-auto space-y-5 pe-1">
           {/* Project-level: Polar */}
           <a
             href={projectSponsor.url}
@@ -238,11 +246,11 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
                   {projectSponsor.name}
                 </span>
                 <Badge variant="default" className="text-[10px] px-2 py-0">
-                  Recommended
+                  {t("donate.recommended", "Recommended")}
                 </Badge>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Sponsor the Netronome project
+                {t("donate.sponsorProject", "Sponsor the Netronome project")}
               </p>
             </div>
             <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors flex-shrink-0" />
@@ -255,7 +263,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
             </div>
             <div className="relative flex justify-center text-xs">
               <span className="bg-white dark:bg-gray-900 px-3 text-gray-400 dark:text-gray-500 font-medium">
-                Maintainers
+                {t("donate.maintainers", "Maintainers")}
               </span>
             </div>
           </div>
@@ -267,7 +275,7 @@ export function DonateModal({ isOpen, onClose }: DonateModalProps) {
 
           {/* Footer */}
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center flex items-center justify-center gap-1 pt-1">
-            Thank you for your support <HeartIcon className="h-4 w-4 text-red-500" />
+            {t("donate.thankYou", "Thank you for your support")} <HeartIcon className="h-4 w-4 text-red-500" />
           </p>
         </div>
       </DialogContent>

@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { TracerouteResult } from "@/types/types";
 import { SignalIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
@@ -24,6 +25,7 @@ export const TracerouteResults: React.FC<TracerouteResultsProps> = ({
   results,
   onCreateMonitor,
 }) => {
+  const { t } = useTranslation();
   const [copySuccess, setCopySuccess] = useState(false);
 
   const copyTracerouteResults = async () => {
@@ -40,7 +42,7 @@ export const TracerouteResults: React.FC<TracerouteResultsProps> = ({
     <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Traceroute Results
+          {t("traceroute.tracerouteResults", "Traceroute Results")}
         </h2>
         <div className="flex items-center gap-2">
           {onCreateMonitor && (
@@ -52,7 +54,7 @@ export const TracerouteResults: React.FC<TracerouteResultsProps> = ({
               whileTap={{ scale: 0.98 }}
             >
               <SignalIcon className="w-3 h-3" />
-              <span>Monitor This Host</span>
+              <span>{t("traceroute.monitorThisHost", "Monitor This Host")}</span>
             </motion.button>
           )}
           <motion.button
@@ -82,22 +84,22 @@ export const TracerouteResults: React.FC<TracerouteResultsProps> = ({
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.2 }}
             >
-              {copySuccess ? "Copied!" : "Copy"}
+              {copySuccess ? t("traceroute.copied", "Copied!") : t("traceroute.copyResults", "Copy")}
             </motion.span>
           </motion.button>
         </div>
       </div>
 
       <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
-        Route to {results.destination}
+        {t("traceroute.routeTo", "Route to")} {results.destination}
         {results.ip && results.ip !== results.destination && (
-          <span className="text-gray-500 dark:text-gray-500 ml-1">
+          <span className="text-gray-500 dark:text-gray-500 ms-1">
             ({results.ip})
           </span>
         )}
         {" • "}
-        {results.totalHops} hops •{" "}
-        {results.complete ? "Complete" : "Incomplete"}
+        {results.totalHops} {t("traceroute.hops", "hops")} •{" "}
+        {results.complete ? t("traceroute.complete", "Complete") : t("traceroute.incomplete", "Incomplete")}
       </p>
 
       {/* Desktop Table View */}

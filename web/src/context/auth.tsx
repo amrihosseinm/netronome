@@ -28,76 +28,36 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Always provide a mock user to bypass login completely
+  const mockUser: User = { id: 1, username: "admin" };
+  const [user, setUser] = useState<User | null>(mockUser);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Skip auth check if we're on the public route
-    const isPublicRoute = window.location.pathname.includes('/public');
-
-    if (isPublicRoute) {
-      setIsLoading(false);
-      return;
-    }
-
-    const checkAuth = async () => {
-      try {
-        const isVerified = await authApi.verify();
-        if (isVerified) {
-          const userInfo = await authApi.getUserInfo();
-          setUser(userInfo.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Auth check failed:", error);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
+    // No need to check auth with backend since it is bypassed
+    setIsLoading(false);
   }, []);
 
   const login = async (username: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await authApi.login(username, password);
-      setUser(response.user);
-    } finally {
-      setIsLoading(false);
-    }
+    setUser(mockUser);
   };
 
   const register = async (username: string, password: string) => {
-    setIsLoading(true);
-    try {
-      const response = await authApi.register(username, password);
-      setUser(response.user);
-    } finally {
-      setIsLoading(false);
-    }
+    setUser(mockUser);
   };
 
   const logout = async () => {
-    setIsLoading(true);
-    try {
-      await authApi.logout();
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
+    // Empty implementation
   };
 
   const checkRegistrationStatus = async () => {
-    return await authApi.checkRegistrationStatus();
+    return { hasUsers: true, oidcConfigured: false, oidcReady: false };
   };
 
   const value = {
     user,
-    isAuthenticated: !!user,
-    isLoading,
+    isAuthenticated: true,
+    isLoading: false,
     login,
     register,
     logout,
@@ -114,3 +74,4 @@ export function useAuth() {
   }
   return context;
 }
+

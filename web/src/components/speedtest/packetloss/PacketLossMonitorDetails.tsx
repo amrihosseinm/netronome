@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { GlobeAltIcon } from "@heroicons/react/24/outline";
@@ -24,6 +25,7 @@ interface PacketLossMonitorDetailsProps {
 export const PacketLossMonitorDetails: React.FC<
   PacketLossMonitorDetailsProps
 > = ({ selectedMonitor, monitorStatuses, onTraceRoute }) => {
+  const { t } = useTranslation();
   const {
     data: monitorHistory,
     hasNextPage,
@@ -73,18 +75,18 @@ export const PacketLossMonitorDetails: React.FC<
       <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {selectedMonitor.name || selectedMonitor.host} Details
+            {t("packetLoss.monitorDetails.title", "{{name}} Details", { name: selectedMonitor.name || selectedMonitor.host })}
           </h2>
           {onTraceRoute && (
             <motion.button
               onClick={onTraceRoute}
               className="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-xs bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/20"
-              title="Run traceroute to this host"
+              title={t("packetLoss.monitorDetails.runTracerouteTooltip", "Run traceroute to this host")}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <GlobeAltIcon className="w-3 h-3" />
-              <span>Trace Route</span>
+              <span>{t("packetLoss.monitorDetails.traceRoute", "Trace Route")}</span>
             </motion.button>
           )}
         </div>

@@ -4,7 +4,9 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
+import { PersianTooltip } from "@/components/common/PersianTooltip";
 import {
   ChartBarIcon,
   WifiIcon,
@@ -26,6 +28,7 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
   onHostSelect,
   onSwitchToMonitors,
 }) => {
+  const { t } = useTranslation();
   if (mode === "traceroute") {
     return (
       <motion.div
@@ -39,11 +42,12 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
             <div className="w-16 h-16 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <GlobeAltIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Run a Traceroute
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2 flex items-center justify-center gap-2">
+              {t("traceroute.empty.runTraceroute", "Run a Traceroute")}
+              <PersianTooltip text="اجرای Traceroute. این ابزار هر گره (Hop) در مسیر رسیدن به یک مقصد را بررسی می‌کند تا تأخیر و مشکلات را نشان دهد." />
             </h2>
             <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Discover every hop packets take to reach a destination
+              {t("traceroute.empty.runTracerouteDesc", "Discover every hop packets take to reach a destination")}
             </p>
           </div>
 
@@ -53,11 +57,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
                 <PlayIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <h3 className="text-blue-700 dark:text-blue-300 text-sm font-medium mb-1">
-                    Quick Start
+                    {t("traceroute.empty.quickStart", "Quick Start")}
                   </h3>
                   <p className="text-blue-700/80 dark:text-blue-300/80 text-xs mb-3">
-                    Enter any hostname or IP address to trace its route, or try
-                    these popular destinations:
+                    {t("traceroute.empty.quickStartDesc", "Enter any hostname or IP address to trace its route, or try these popular destinations:")}
                   </p>
                   {onHostSelect && (
                     <div className="flex flex-wrap gap-2">
@@ -92,10 +95,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
                 </div>
                 <div>
                   <h4 className="text-gray-900 dark:text-white text-sm font-medium mb-1">
-                    Hop-by-Hop Analysis
+                    {t("traceroute.empty.hopByHop", "Hop-by-Hop Analysis")}
                   </h4>
                   <p className="text-gray-600 dark:text-gray-400 text-xs">
-                    See each router in the path
+                    {t("traceroute.empty.hopByHopDesc", "See each router in the path")}
                   </p>
                 </div>
               </div>
@@ -106,19 +109,19 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
                 </div>
                 <div>
                   <h4 className="text-gray-900 dark:text-white text-sm font-medium mb-1">
-                    Create Monitor
+                    {t("traceroute.empty.createMonitor", "Create Monitor")}
                   </h4>
                   <p className="text-gray-600 dark:text-gray-400 text-xs">
-                    Convert results into a{" "}
+                    {t("traceroute.empty.createMonitorPrefix", "Convert results into a")}{" "}
                     {onSwitchToMonitors ? (
                       <button
                         onClick={onSwitchToMonitors}
                         className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 underline"
                       >
-                        scheduled monitor
+                        {t("traceroute.empty.scheduledMonitor", "scheduled monitor")}
                       </button>
                     ) : (
-                      "scheduled monitor"
+                      t("traceroute.empty.scheduledMonitor", "scheduled monitor")
                     )}
                   </p>
                 </div>
@@ -144,10 +147,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
             <ChartBarIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
           </div>
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Packet Loss Monitoring
+            {t("packetLoss.empty.title", "Packet Loss Monitoring")}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
-            Track packet loss percentage to specific hosts over time
+            {t("packetLoss.empty.description", "Track packet loss percentage to specific hosts over time")}
           </p>
         </div>
 
@@ -159,10 +162,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
               </div>
               <div>
                 <h4 className="text-gray-900 dark:text-white text-sm font-medium mb-1">
-                  Scheduled Testing
+                  {t("packetLoss.empty.scheduledTesting", "Scheduled Testing")}
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  Tests run automatically at your interval
+                  {t("packetLoss.empty.scheduledTestingDesc", "Tests run automatically at your interval")}
                 </p>
               </div>
             </div>
@@ -173,10 +176,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
               </div>
               <div>
                 <h4 className="text-gray-900 dark:text-white text-sm font-medium mb-1">
-                  Packet Loss Alerts
+                  {t("packetLoss.empty.alerts", "Packet Loss Alerts")}
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  Get notified when loss exceeds thresholds
+                  {t("packetLoss.empty.alertsDesc", "Get notified when loss exceeds thresholds")}
                 </p>
               </div>
             </div>
@@ -187,10 +190,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
               </div>
               <div>
                 <h4 className="text-gray-900 dark:text-white text-sm font-medium mb-1">
-                  Historical Charts
+                  {t("packetLoss.empty.historicalCharts", "Historical Charts")}
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  View trends and patterns over time
+                  {t("packetLoss.empty.historicalChartsDesc", "View trends and patterns over time")}
                 </p>
               </div>
             </div>
@@ -201,10 +204,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
               </div>
               <div>
                 <h4 className="text-gray-900 dark:text-white text-sm font-medium mb-1">
-                  Smart Testing Method
+                  {t("packetLoss.empty.smartTesting", "Smart Testing Method")}
                 </h4>
                 <p className="text-gray-600 dark:text-gray-400 text-xs">
-                  MTR when available (requires root), ICMP ping otherwise
+                  {t("packetLoss.empty.smartTestingDesc", "MTR when available (requires root), ICMP ping otherwise")}
                 </p>
               </div>
             </div>
@@ -216,11 +219,10 @@ export const EmptyStatePlaceholder: React.FC<EmptyStatePlaceholderProps> = ({
             <SignalIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
             <div>
               <h4 className="text-blue-700 dark:text-blue-300 text-sm font-medium mb-1">
-                Get Started
+                {t("packetLoss.empty.getStarted", "Get Started")}
               </h4>
               <p className="text-blue-700/80 dark:text-blue-300/80 text-xs">
-                Select a monitor to view packet loss history and real-time
-                status.
+                {t("packetLoss.empty.getStartedDesc", "Select a monitor to view packet loss history and real-time status.")}
               </p>
             </div>
           </div>

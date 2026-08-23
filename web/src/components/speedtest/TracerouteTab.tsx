@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChartBarIcon, GlobeAltIcon } from "@heroicons/react/24/outline";
@@ -42,6 +43,7 @@ import { TracerouteServerSelector } from "./traceroute/TracerouteServerSelector"
 import { TracerouteProgress } from "./traceroute/TracerouteProgress";
 import { TracerouteLiveResults } from "./traceroute/TracerouteLiveResults";
 import { TracerouteResults } from "./traceroute/TracerouteResults";
+import { GuideSection } from "@/components/irantools/GuideSection";
 
 // Import new traceroute hooks
 import { useTracerouteExecution } from "./traceroute/hooks/useTracerouteExecution";
@@ -58,6 +60,7 @@ import {
 } from "./traceroute/constants/tracerouteConstants";
 
 export const TracerouteTab: React.FC = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   // Tab mode state with localStorage persistence
@@ -133,8 +136,8 @@ export const TracerouteTab: React.FC = () => {
         queryKey: ["packetloss", "monitors"],
       });
 
-      showToast("Monitor created successfully", "success", {
-        description: `Monitoring ${variables.host}`,
+      showToast(t("traceroute.monitorCreatedSuccess", "Monitor created successfully"), "success", {
+        description: t("traceroute.monitoringHost", "Monitoring {{host}}", { host: variables.host }),
       });
 
       // Auto-start monitor if requested and we have a valid monitor ID
@@ -146,9 +149,9 @@ export const TracerouteTab: React.FC = () => {
       handleCancelForm();
     },
     onError: (error) => {
-      showToast("Failed to create monitor", "error", {
+      showToast(t("traceroute.failedToCreateMonitor", "Failed to create monitor"), "error", {
         description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error ? error.message : t("traceroute.unknownErrorOccurred", "Unknown error occurred"),
       });
     },
   });
@@ -161,15 +164,15 @@ export const TracerouteTab: React.FC = () => {
         queryKey: ["packetloss", "monitors"],
       });
       showToast(
-        `Monitor ${editingMonitor?.name} updated successfully`,
+        t("traceroute.monitorUpdatedSuccess", "Monitor {{name}} updated successfully", { name: editingMonitor?.name }),
         "success"
       );
       handleCancelForm();
     },
     onError: (error) => {
-      showToast(`Failed to update monitor ${editingMonitor?.name}`, "error", {
+      showToast(t("traceroute.failedToUpdateMonitor", "Failed to update monitor {{name}}", { name: editingMonitor?.name }), "error", {
         description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error ? error.message : t("traceroute.unknownErrorOccurred", "Unknown error occurred"),
       });
     },
   });
@@ -185,13 +188,13 @@ export const TracerouteTab: React.FC = () => {
       if (selectedMonitor?.id === monitorId) {
         setSelectedMonitor(null);
       }
-      showToast("Monitor deleted successfully", "success", {
-        description: deletedMonitor ? `${deletedMonitor.name} has been removed` : "Monitor has been removed"
+      showToast(t("traceroute.monitorDeletedSuccess", "Monitor deleted successfully"), "success", {
+        description: deletedMonitor ? t("traceroute.monitorRemovedNamed", "{{name}} has been removed", { name: deletedMonitor.name }) : t("traceroute.monitorRemoved", "Monitor has been removed")
       });
     },
     onError: (error) => {
-      showToast("Failed to delete monitor", "error", {
-        description: error instanceof Error ? error.message : "Unknown error occurred"
+      showToast(t("traceroute.failedToDeleteMonitor", "Failed to delete monitor"), "error", {
+        description: error instanceof Error ? error.message : t("traceroute.unknownErrorOccurred", "Unknown error occurred")
       });
     },
   });
@@ -227,10 +230,10 @@ export const TracerouteTab: React.FC = () => {
         queryKey: ["packetloss", "monitors"],
       });
       const monitor = monitorList.find((m) => m.id === monitorId);
-      showToast("Monitor stopped", "success", {
+      showToast(t("traceroute.monitorStopped", "Monitor stopped"), "success", {
         description: monitor
-          ? `Stopped monitoring ${monitor.name}`
-          : "Monitor is now inactive",
+          ? t("traceroute.stoppedMonitoring", "Stopped monitoring {{name}}", { name: monitor.name })
+          : t("traceroute.monitorInactive", "Monitor is now inactive"),
       });
     },
     onSettled: (_, __, monitorId) => {
@@ -241,9 +244,9 @@ export const TracerouteTab: React.FC = () => {
       });
     },
     onError: (error) => {
-      showToast("Failed to stop monitor", "error", {
+      showToast(t("traceroute.failedToStopMonitor", "Failed to stop monitor"), "error", {
         description:
-          error instanceof Error ? error.message : "Unknown error occurred",
+          error instanceof Error ? error.message : t("traceroute.unknownErrorOccurred", "Unknown error occurred"),
       });
     },
   });
@@ -365,7 +368,7 @@ export const TracerouteTab: React.FC = () => {
           )}
           <span className="relative flex items-center gap-2">
             <GlobeAltIcon className="w-4 h-4" />
-            <span className="font-medium">Single Trace</span>
+            <span className="font-medium">{t("traceroute.singleTrace", "Single Trace")}</span>
           </span>
         </Button>
         <Button
@@ -389,7 +392,7 @@ export const TracerouteTab: React.FC = () => {
           )}
           <span className="relative flex items-center gap-2">
             <ChartBarIcon className="w-4 h-4" />
-            <span className="font-medium">Monitors</span>
+            <span className="font-medium">{t("traceroute.monitorsTab", "Monitors")}</span>
           </span>
         </Button>
       </div>
@@ -417,7 +420,7 @@ export const TracerouteTab: React.FC = () => {
             {error && (
               <div className="mb-6 p-4 backdrop-blur-sm bg-red-500/10 border border-red-500/30 rounded-lg">
                 <div className="text-red-600 dark:text-red-400 text-sm">
-                  <span className="font-medium">Error: </span>
+                  <span className="font-medium">{t("traceroute.errorLabel", "Error:")} </span>
                   {error}
                 </div>
               </div>
@@ -468,15 +471,15 @@ export const TracerouteTab: React.FC = () => {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                    Network Monitors
+                    {t("traceroute.networkMonitors", "Network Monitors")}
                   </h2>
                   <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-                    Continuous monitoring with MTR or ICMP ping
+                    {t("traceroute.continuousMonitoringDescription", "Continuous monitoring with MTR or ICMP ping")}
                   </p>
                 </div>
 
                 <Button onClick={() => setShowForm(true)} variant="default">
-                  Add
+                  {t("common.add", "Add")}
                 </Button>
               </div>
 
@@ -530,6 +533,20 @@ export const TracerouteTab: React.FC = () => {
         onFormDataChange={setFormData}
         isLoading={createMutation.isPending || updateMutation.isPending}
       />
+
+      {/* Traceroute Guide */}
+      <GuideSection title={t("traceroute.guide.title", "About Traceroute & Network Monitors")}>
+        <p>{t("traceroute.guide.p1", "The Traceroute feature maps the network path from the server to any destination, showing each router (hop) along the way with three round-trip time measurements.")}</p>
+        <p>{t("traceroute.guide.p2", "Network Monitors run continuous ICMP ping or MTR checks against a target at scheduled intervals, recording packet loss and latency over time.")}</p>
+        <ul className="list-disc list-inside space-y-1">
+          <li>{t("traceroute.guide.li1", "Enter a hostname or IP, or pick one of the available servers to trace the route from that location.")}</li>
+          <li>{t("traceroute.guide.li2", "Each hop shows three RTT (Round-Trip Time) measurements — variations indicate unstable routing.")}</li>
+          <li>{t("traceroute.guide.li3", "A '*' (timeout) means that router did not respond to probes — this is common and does not always indicate a problem.")}</li>
+          <li>{t("traceroute.guide.li4", "Switch to Network Monitors to set up continuous monitoring with alerts for packet loss exceeding your threshold.")}</li>
+          <li>{t("traceroute.guide.li5", "MTR-based monitors provide richer per-hop statistics compared to simple ICMP ping.")}</li>
+          <li>{t("traceroute.guide.li6", "Monitor results are stored historically so you can review past network quality.")}</li>
+        </ul>
+      </GuideSection>
     </div>
   );
 };

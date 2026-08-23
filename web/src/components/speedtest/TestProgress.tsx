@@ -5,14 +5,41 @@
 
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 import { TestProgress as TestProgressType } from "@/types/types";
-import { ArrowDownIcon, ArrowUpIcon } from "@heroicons/react/24/outline";
+import { SpeedGauge } from "./SpeedGauge";
 
 interface TestProgressProps {
   progress: TestProgressType | null;
 }
 
 export const TestProgress: React.FC<TestProgressProps> = ({ progress }) => {
+  const { t } = useTranslation();
+
+  // Small inline status (dots + message) reused by preparing / running states
+  const DotsMessage: React.FC<{ message: string }> = ({ message }) => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex items-center justify-center gap-2 text-xs w-full"
+    >
+      <div className="flex gap-1">
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            className="w-1 h-1 bg-gray-600 dark:bg-gray-400 rounded-full"
+            animate={{ opacity: [0.3, 1, 0.3] }}
+            transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.2 }}
+          />
+        ))}
+      </div>
+      <span className="text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">
+        {message}
+      </span>
+    </motion.div>
+  );
+
   // Determine what content to show
   const getContent = () => {
     // If no progress, return null
@@ -39,64 +66,14 @@ export const TestProgress: React.FC<TestProgressProps> = ({ progress }) => {
       }
 
       return (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="flex items-center justify-center space-x-2 text-xs w-full"
-        >
-          <div className="flex space-x-1">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="w-1 h-1 bg-gray-600 dark:bg-gray-400 rounded-full"
-                animate={{
-                  opacity: [0.3, 1, 0.3],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
-          </div>
-          <span className="text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">
-            Preparing test...
-          </span>
-        </motion.div>
+        <DotsMessage message={t("speedtest.preparingTest", "Preparing test...")} />
       );
     }
 
     // Show animated message for LibreSpeed
     if (progress.isLibrespeed) {
       return (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="flex items-center justify-center space-x-2 text-xs w-full"
-        >
-          <div className="flex space-x-1">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="w-1 h-1 bg-gray-600 dark:bg-gray-400 rounded-full"
-                animate={{
-                  opacity: [0.3, 1, 0.3],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  delay: i * 0.2,
-                }}
-              />
-            ))}
-          </div>
-          <span className="text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">
-            Running LibreSpeed test...
-          </span>
-        </motion.div>
+        <DotsMessage message={t("speedtest.runningLibreSpeed", "Running LibreSpeed test...")} />
       );
     }
 
@@ -106,117 +83,71 @@ export const TestProgress: React.FC<TestProgressProps> = ({ progress }) => {
 
   const content = getContent();
 
-  const getStatusColor = () => {
-    if (!progress) return "text-gray-400";
-    switch (progress.type) {
-      case "download":
-        return "text-blue-500";
-      case "upload":
-        return "text-emerald-500";
-      case "ping":
-      case "complete":
-        return "text-yellow-500";
-      default:
-        return "text-gray-400";
-    }
-  };
+  const isLivePhase =
+    content === "testProgress" &&
+    !!progress &&
+    (progress.type === "download" || progress.type === "upload");
 
-  const getTestPhase = () => {
-    if (!progress) return "";
-    switch (progress.type) {
-      case "download":
-        return "Download Test";
-      case "upload":
-        return "Upload Test";
-      case "ping":
-        return "Latency Test";
-      default:
-        return progress.currentTest;
-    }
-  };
+  const gaugeVariant =
+    progress?.type === "upload"
+      ? ("upload" as const)
+      : progress?.type === "download"
+      ? ("download" as const)
+      : ("neutral" as const);
 
-  // Always render a container with consistent height to prevent layout shift
+  const gaugeLabel =
+    progress?.type === "upload"
+      ? t("speedtest.gauge.upload", "Upload")
+      : progress?.type === "download"
+      ? t("speedtest.gauge.download", "Download")
+      : t("speedtest.gauge.latency", "Latency");
+
   return (
-    <div className="relative h-5 w-full max-w-[16rem] flex items-center justify-center">
+    <div className="w-full flex justify-center">
       <AnimatePresence mode="wait">
-        {content === null ? (
+        {isLivePhase && progress ? (
+          // Live phase: speedtest.net-style circular gauge
+          <motion.div
+            key="gauge"
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.85 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="flex flex-col items-center py-2"
+          >
+            <SpeedGauge
+              value={progress.currentSpeed}
+              label={gaugeLabel}
+              variant={gaugeVariant}
+              progress={progress.progress}
+              size={230}
+            />
+            {progress.currentServer && (
+              <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center px-4 truncate max-w-full">
+                {progress.currentServer}
+              </span>
+            )}
+          </motion.div>
+        ) : content && content !== "testProgress" ? (
+          // Preparing / running messages - small inline status with stable height
+          <motion.div
+            key="status"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="relative h-5 w-full max-w-[16rem] flex items-center justify-center"
+          >
+            {content}
+          </motion.div>
+        ) : (
           // Empty state - maintains height but shows nothing
           <motion.div
             key="empty"
             initial={{ opacity: 0 }}
             animate={{ opacity: 0 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0"
+            className="h-5"
           />
-        ) : content === "testProgress" && progress ? (
-          // Show actual test progress
-          <motion.div
-            key="progress"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex items-center justify-center space-x-2 text-xs w-full px-2"
-          >
-            {/* Test type icon */}
-            <div className={`${getStatusColor()} flex-shrink-0`}>
-              {progress.type === "download" ? (
-                <ArrowDownIcon className="w-4 h-4" />
-              ) : progress.type === "upload" ? (
-                <ArrowUpIcon className="w-4 h-4" />
-              ) : null}
-            </div>
-
-            {/* Test info */}
-            <div className="flex items-baseline space-x-0.5 whitespace-nowrap">
-              <span className="text-gray-700 dark:text-gray-300 font-medium">
-                {getTestPhase()}:
-              </span>
-
-              <div className="relative inline-block w-10 text-right">
-                <AnimatePresence>
-                  <motion.span
-                    key={progress.currentSpeed}
-                    initial={{
-                      opacity: 0,
-                      filter: "blur(4px)",
-                    }}
-                    animate={{
-                      opacity: 1,
-                      filter: "blur(0px)",
-                    }}
-                    exit={{
-                      opacity: 0,
-                      filter: "blur(4px)",
-                      position: "absolute",
-                      right: 0,
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      ease: "easeInOut",
-                    }}
-                    className={`font-bold ${getStatusColor()}`}
-                  >
-                    {progress.currentSpeed < 1
-                      ? (progress.currentSpeed * 1000).toFixed(0)
-                      : progress.currentSpeed.toFixed(1)}
-                  </motion.span>
-                </AnimatePresence>
-              </div>
-
-              <span className="text-gray-600 dark:text-gray-400">
-                {progress.currentSpeed < 1 ? "Kbps" : "Mbps"}
-              </span>
-
-              {progress.progress > 0 && (
-                <span className="text-gray-500 dark:text-gray-500">
-                  ({Math.round(progress.progress)}%)
-                </span>
-              )}
-            </div>
-          </motion.div>
-        ) : (
-          // Show the preparing/running messages
-          content
         )}
       </AnimatePresence>
     </div>

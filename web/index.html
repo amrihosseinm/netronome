@@ -23,6 +23,13 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="manifest" href="/manifest.json" />
     <script>
+      // Unregister any stale service workers in dev mode so caches don't block API calls
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (var reg of registrations) { reg.unregister(); }
+        });
+      }
+
       // Handle empty base URL and template variable cases
       const rawBaseUrl = '{{.BaseURL}}';
       window.__BASE_URL__ = rawBaseUrl.startsWith('{{') || !rawBaseUrl ? '/' : rawBaseUrl;

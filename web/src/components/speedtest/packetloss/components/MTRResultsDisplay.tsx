@@ -105,13 +105,13 @@ export const MTRResultsDisplay: React.FC<MTRResultsDisplayProps> = ({
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-gray-300 dark:border-gray-700">
-                      <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">
+                      <th className="text-start py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">
                         Hop
                       </th>
-                      <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">
+                      <th className="text-start py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">
                         Host
                       </th>
-                      <th className="text-left py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">
+                      <th className="text-start py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">
                         ASN
                       </th>
                       <th className="text-center py-2 px-2 text-gray-600 dark:text-gray-400 font-medium">

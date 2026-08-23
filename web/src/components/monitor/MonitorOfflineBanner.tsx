@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { ServerIcon } from "@heroicons/react/24/outline";
 
 interface MonitorOfflineBannerProps {
@@ -11,18 +12,26 @@ interface MonitorOfflineBannerProps {
 }
 
 export const MonitorOfflineBanner: React.FC<MonitorOfflineBannerProps> = ({
-  message = "Showing cached data. Real-time metrics unavailable.",
+  message,
 }) => {
+  const { t } = useTranslation();
+  const resolvedMessage =
+    message ??
+    t(
+      "monitor.offlineBanner.defaultMessage",
+      "Showing cached data. Real-time metrics unavailable."
+    );
+
   return (
     <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4">
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center gap-3">
         <ServerIcon className="h-5 w-5 text-amber-500" />
         <div>
           <p className="text-sm font-medium text-amber-600 dark:text-amber-400">
-            Agent Offline
+            {t("monitor.offlineBanner.agentOffline", "Agent Offline")}
           </p>
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-            {message}
+            {resolvedMessage}
           </p>
         </div>
       </div>

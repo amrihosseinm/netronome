@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { Server } from "@/types/types";
 import { Button } from "@/components/ui/Button";
@@ -11,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ServerFilters } from "./components/ServerFilters";
 import { ServerCard } from "./components/ServerCard";
 import { useServerData } from "./hooks/useServerData";
+import { PersianTooltip } from "@/components/common/PersianTooltip";
 import { extractHostname } from "./utils/tracerouteUtils";
 
 interface TracerouteServerSelectorProps {
@@ -32,6 +34,7 @@ export const TracerouteServerSelector: React.FC<
   onRunTraceroute,
   isRunning,
 }) => {
+  const { t } = useTranslation();
   const {
     displayedServers,
     serverTypeOptions,
@@ -73,12 +76,12 @@ export const TracerouteServerSelector: React.FC<
     >
       <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
         <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Traceroute
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            {t("traceroute.title", "Traceroute")}
+            <PersianTooltip text="ردیابی مسیر شبکه (Traceroute). این ابزار نشان می‌دهد که داده‌ها از چه مسیرها و روترهایی عبور می‌کنند تا به مقصد برسند." />
           </h2>
           <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
-            Trace network paths to see which backbone providers you travel
-            through
+            {t("traceroute.subtitle", "Trace network paths to see which backbone providers you travel through")}
           </p>
         </div>
 
@@ -91,7 +94,7 @@ export const TracerouteServerSelector: React.FC<
               onHostChange(e.target.value);
               onServerSelect(null);
             }}
-            placeholder="Enter hostname/IP (e.g., google.com, 8.8.8.8)"
+            placeholder={t("traceroute.enterHostPlaceholder", "Enter hostname/IP (e.g., google.com, 8.8.8.8)")}
             className="flex-1"
             disabled={isRunning}
             onKeyDown={(e) => {
@@ -107,7 +110,7 @@ export const TracerouteServerSelector: React.FC<
             variant={getButtonVariant()}
             className="min-w-[100px]"
           >
-            {isRunning ? "Running" : "Trace"}
+            {isRunning ? t("traceroute.running", "Running") : t("traceroute.trace", "Trace")}
           </Button>
         </div>
 
@@ -118,7 +121,7 @@ export const TracerouteServerSelector: React.FC<
           </div>
           <div className="relative flex justify-center text-sm">
             <span className="px-4 bg-gray-50 dark:bg-gray-850 text-gray-600 dark:text-gray-400">
-              or select from available servers
+              {t("traceroute.orSelectFromServers", "or select from available servers")}
             </span>
           </div>
         </div>
@@ -154,7 +157,7 @@ export const TracerouteServerSelector: React.FC<
               variant="outline"
               className="bg-gray-200/30 dark:bg-gray-800/30 border-gray-300/50 dark:border-gray-900/50 text-gray-600/50 dark:text-gray-300/50 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-300/50 dark:hover:bg-gray-800/50"
             >
-              Load More
+              {t("traceroute.loadMore", "Load More")}
             </Button>
           </div>
         )}

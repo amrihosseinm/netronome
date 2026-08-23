@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import {
   ServerIcon,
@@ -29,6 +30,7 @@ interface FeaturedMonitorWidgetProps {
 export const FeaturedMonitorWidget: React.FC<FeaturedMonitorWidgetProps> = ({
   onNavigateToMonitor,
 }) => {
+  const { t } = useTranslation();
   const [selectedAgent, setSelectedAgent] = useState<MonitorAgent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   // Get featured agent IDs from localStorage
@@ -67,8 +69,8 @@ export const FeaturedMonitorWidget: React.FC<FeaturedMonitorWidgetProps> = ({
       transition={{ duration: 0.5 }}
       className="mb-6"
     >
-      <h2 className="text-gray-900 dark:text-white text-xl ml-1 font-semibold mb-4">
-        Netronome Agents
+      <h2 className="text-gray-900 dark:text-white text-xl ms-1 font-semibold mb-4">
+        {t("monitor.featuredWidget.title", "Netronome Agents")}
       </h2>
 
       {/* Mobile: Stacked layout, Desktop: Grid layout */}
@@ -114,6 +116,7 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
   onOpenModal,
   onNavigateToAgent,
 }) => {
+  const { t } = useTranslation();
   // Use the shared hook for agent data
   const { status, nativeData, hardwareStats } = useMonitorAgent({
     agent,
@@ -132,7 +135,7 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
     >
       {/* Header with agent name, status and icon */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2 min-w-0 flex-1">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
           {status?.connected ? (
             <span className="relative inline-flex h-2.5 w-2.5 flex-shrink-0">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -154,7 +157,7 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Connected through Tailscale</p>
+                  <p>{t("monitor.featuredWidget.connectedThroughTailscale", "Connected through Tailscale")}</p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -163,7 +166,7 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
               <div className="flex items-center gap-1">
                 <CpuChipIcon className="h-3 w-3 text-gray-400" />
                 <span className="text-xs text-gray-600 dark:text-gray-400">
-                  CPU: {hardwareStats.cpu.usage_percent.toFixed(0)}% RAM:{" "}
+                  {t("monitor.featuredWidget.cpu", "CPU")}: {hardwareStats.cpu.usage_percent.toFixed(0)}% {t("monitor.featuredWidget.ram", "RAM")}:{" "}
                   {hardwareStats.memory.used_percent.toFixed(0)}%
                 </span>
               </div>
@@ -189,7 +192,7 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>View detailed stats</p>
+              <p>{t("monitor.featuredWidget.viewDetailedStats", "View detailed stats")}</p>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -201,13 +204,13 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
           {/* Current speeds with larger text */}
           <div className="grid grid-cols-2 gap-4 mb-4">
             {/* Download */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               <div className="rounded-full bg-blue-100 p-2 dark:bg-blue-900/20 flex-shrink-0">
                 <FaArrowDown className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Download
+                  {t("monitor.featuredWidget.download", "Download")}
                 </p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
                   {status.liveData.rx.ratestring}
@@ -216,13 +219,13 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
             </div>
 
             {/* Upload */}
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               <div className="rounded-full bg-green-100 p-2 dark:bg-green-900/20 flex-shrink-0">
                 <FaArrowUp className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
               <div className="flex-1">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Upload
+                  {t("monitor.featuredWidget.upload", "Upload")}
                 </p>
                 <p className="text-lg font-bold text-gray-900 dark:text-white">
                   {status.liveData.tx.ratestring}
@@ -236,20 +239,20 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
             <div className="border-t border-gray-200 dark:border-gray-800 pt-3">
               <div className="flex items-center justify-between mb-1">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Today's Usage
+                  {t("monitor.featuredWidget.todaysUsage", "Today's Usage")}
                 </p>
                 <p className="text-xs font-medium text-gray-700 dark:text-gray-300">
                   {formatBytes(usage["Today"]?.total || 0)}
                 </p>
               </div>
-              <div className="flex items-center justify-end space-x-2">
-                <div className="flex items-center space-x-1">
+              <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center gap-1">
                   <FaArrowDown className="h-3 w-3 text-blue-500" />
                   <span className="text-xs text-gray-600 dark:text-gray-400">
                     {formatBytes(usage["Today"]?.download || 0)}
                   </span>
                 </div>
-                <div className="flex items-center space-x-1">
+                <div className="flex items-center gap-1">
                   <FaArrowUp className="h-3 w-3 text-green-500" />
                   <span className="text-xs text-gray-600 dark:text-gray-400">
                     {formatBytes(usage["Today"]?.upload || 0)}
@@ -263,7 +266,7 @@ const FeaturedAgentCard: React.FC<FeaturedAgentCardProps> = ({
         <div className="text-center py-8">
           <ServerIcon className="h-8 w-8 text-gray-400 mx-auto" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {status?.connected === false ? "Disconnected" : "No data"}
+            {status?.connected === false ? t("monitor.featuredWidget.disconnected", "Disconnected") : t("monitor.featuredWidget.noData", "No data")}
           </p>
         </div>
       )}

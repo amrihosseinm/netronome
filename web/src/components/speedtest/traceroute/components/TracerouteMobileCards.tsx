@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { TracerouteHop } from "@/types/types";
 import { CountryFlag } from "@/components/speedtest/packetloss/components/CountryFlag";
@@ -47,6 +48,7 @@ const TracerouteMobileCard: React.FC<TracerouteMobileCardProps> = ({
   hop,
   showAnimation,
 }) => {
+  const { t } = useTranslation();
   const CardComponent = showAnimation ? motion.div : "div";
   const cardProps = showAnimation
     ? {
@@ -61,7 +63,7 @@ const TracerouteMobileCard: React.FC<TracerouteMobileCardProps> = ({
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="font-mono text-blue-600 dark:text-blue-400 font-semibold">
-            Hop {hop.number}
+            {t("traceroute.tableColumns.hop", "Hop")} {hop.number}
           </span>
           {hop.countryCode && (
             <div className="flex items-center gap-1">
@@ -75,12 +77,12 @@ const TracerouteMobileCard: React.FC<TracerouteMobileCardProps> = ({
       </div>
 
       <div className="text-sm text-gray-900 dark:text-gray-100 font-mono mb-2 break-all">
-        {hop.timeout ? "Timeout" : hop.host}
+        {hop.timeout ? t("traceroute.timeout", "Timeout") : hop.host}
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
         <span className="text-gray-600 dark:text-gray-400">
-          RTT:{" "}
+          {t("traceroute.tableColumns.rtt1", "RTT")}:{" "}
           <span
             className={`font-mono ${
               hop.timeout
@@ -111,7 +113,7 @@ const TracerouteMobileCard: React.FC<TracerouteMobileCardProps> = ({
         </span>
 
         <span className="text-gray-600 dark:text-gray-400">
-          Avg:{" "}
+          {t("traceroute.tableColumns.avg", "Avg")}:{" "}
           <span
             className={`font-mono font-medium ${
               hop.timeout ? "text-gray-500" : "text-gray-900 dark:text-gray-100"
@@ -123,7 +125,7 @@ const TracerouteMobileCard: React.FC<TracerouteMobileCardProps> = ({
 
         {hop.as && (
           <span className="text-gray-600 dark:text-gray-400">
-            ASN:{" "}
+            {t("traceroute.tableColumns.asn", "ASN")}:{" "}
             <span className="font-mono text-gray-900 dark:text-gray-100">
               {hop.as}
             </span>

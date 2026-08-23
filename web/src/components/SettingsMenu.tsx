@@ -30,10 +30,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useTranslation } from "react-i18next";
 
 interface SettingsSection {
   id: string;
-  label: string;
+  labelKey: string;
+  defaultLabel: string;
   icon: React.ReactNode;
   component: React.ComponentType;
 }
@@ -41,37 +43,43 @@ interface SettingsSection {
 const settingsSections: SettingsSection[] = [
   {
     id: "notifications",
-    label: "Notifications",
+    labelKey: "app.notifications",
+    defaultLabel: "Notifications",
     icon: <BellIcon className="w-4 h-4" />,
     component: NotificationSettings,
   },
   {
     id: "time-format",
-    label: "Time & Timezone",
+    labelKey: "settingsMenu.timeAndTimezone",
+    defaultLabel: "Time & Timezone",
     icon: <ClockIcon className="w-4 h-4" />,
     component: TimeFormatSettings,
   },
   {
     id: "distance",
-    label: "Distance Units",
+    labelKey: "settingsMenu.distanceUnits",
+    defaultLabel: "Distance Units",
     icon: <MapPinIcon className="w-4 h-4" />,
     component: DistanceSettings,
   },
   {
     id: "dashboard",
-    label: "Dashboard",
+    labelKey: "dashboard.title",
+    defaultLabel: "Dashboard",
     icon: <PresentationChartLineIcon className="w-4 h-4" />,
     component: DashboardSettings,
   },
   {
     id: "data",
-    label: "Data",
+    labelKey: "settingsMenu.data",
+    defaultLabel: "Data",
     icon: <CircleStackIcon className="w-4 h-4" />,
     component: DataSettings,
   },
 ];
 
 export const SettingsMenu: React.FC = () => {
+  const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
   const [activeSection, setActiveSection] = useState<string>(settingsSections[0].id);
 
@@ -92,7 +100,7 @@ export const SettingsMenu: React.FC = () => {
             variant="ghost"
             size="icon"
             className="text-gray-600 dark:text-gray-600 hover:text-gray-900 dark:hover:text-gray-400"
-            aria-label="Settings"
+            aria-label={t("app.settings", "Settings")}
           >
             <Cog6ToothIcon className="w-6 h-6" />
           </Button>
@@ -109,8 +117,8 @@ export const SettingsMenu: React.FC = () => {
             >
               <div className="flex items-center gap-3 w-full">
                 {section.icon}
-                <span className="flex-1 text-left font-medium">
-                  {section.label}
+                <span className="flex-1 text-start font-medium">
+                  {t(section.labelKey, section.defaultLabel)}
                 </span>
               </div>
             </DropdownMenuItem>
@@ -125,7 +133,7 @@ export const SettingsMenu: React.FC = () => {
         >
           <DialogHeader className="p-6 border-b border-gray-200 dark:border-gray-800">
             <DialogTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-              Settings
+              {t("app.settings", "Settings")}
             </DialogTitle>
           </DialogHeader>
           <div className="p-0 sm:p-6 lg:p-8 max-h-[70vh] overflow-y-auto modal-scrollbar">

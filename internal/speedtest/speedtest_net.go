@@ -26,6 +26,7 @@ type SpeedtestNetRunner struct {
 	serverCache      []ServerResponse
 	cacheExpiry      time.Time
 	cacheDuration    time.Duration
+	lastUserIP       string
 }
 
 func NewSpeedtestNetRunner(cfg config.SpeedTestConfig) *SpeedtestNetRunner {
@@ -291,13 +292,46 @@ func (r *SpeedtestNetRunner) RunTest(ctx context.Context, opts *types.TestOption
 }
 
 func (r *SpeedtestNetRunner) GetServers() ([]ServerResponse, error) {
+	return r.getServers(false)
+}
+
+// RefreshServers bypasses the cache and fetches a fresh server list.
+func (r *SpeedtestNetRunner) RefreshServers() ([]ServerResponse, error) {
+	return r.getServers(true)
+}
+
+// getServers returns the cached server list when it is still valid and the
+// user's public IP has not changed. The IP check makes the list follow VPN /
+// location switches immediately instead of waiting for the cache to expire.
+func (r *SpeedtestNetRunner) getServers(force bool) ([]ServerResponse, error) {
 	log.Trace().
 		Int("cache_size", len(r.serverCache)).
 		Time("cache_expiry", r.cacheExpiry).
 		Bool("cache_valid", time.Now().Before(r.cacheExpiry)).
 		Msg("Checking cache status")
 
-	if len(r.serverCache) > 0 && time.Now().Before(r.cacheExpiry) {
+	user, err := r.client.FetchUserInfo()
+	if err != nil {
+		log.Warn().Err(err).Msg("Failed to fetch speedtest user info")
+		// Network hiccup (common with filtered networks / VPN toggling):
+		// prefer a stale list over a hard error when we have one.
+		if len(r.serverCache) > 0 {
+			log.Warn().Msg("Serving cached speedtest server list")
+			return r.serverCache, nil
+		}
+		return nil, fmt.Errorf("failed to fetch user info: %w", err)
+	}
+
+	ipChanged := r.lastUserIP != "" && r.lastUserIP != user.IP
+	if ipChanged {
+		log.Info().
+			Str("previous_ip", r.lastUserIP).
+			Str("current_ip", user.IP).
+			Msg("Public IP changed, refreshing speedtest server list")
+	}
+	r.lastUserIP = user.IP
+
+	if !force && !ipChanged && len(r.serverCache) > 0 && time.Now().Before(r.cacheExpiry) {
 		log.Debug().
 			Int("server_count", len(r.serverCache)).
 			Time("cache_expiry", r.cacheExpiry).
@@ -306,12 +340,6 @@ func (r *SpeedtestNetRunner) GetServers() ([]ServerResponse, error) {
 	}
 
 	log.Debug().Msg("Cache miss, fetching fresh speedtest servers")
-
-	_, err := r.client.FetchUserInfo()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to fetch speedtest user info")
-		return nil, fmt.Errorf("failed to fetch user info: %w", err)
-	}
 
 	serverList, err := r.client.FetchServers()
 	if err != nil {

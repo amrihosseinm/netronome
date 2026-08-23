@@ -8,19 +8,23 @@ import { Container } from "@mui/material";
 import { FaGithub } from "react-icons/fa";
 import { XMarkIcon } from "@heroicons/react/20/solid";
 import { ShareModal } from "./speedtest/ShareModal";
-import { TestProgress } from "./speedtest/TestProgress";
 import { TabNavigation } from "./common/TabNavigation";
 import { DashboardTab } from "./speedtest/DashboardTab";
 import { SpeedTestTab } from "./speedtest/SpeedTestTab";
 import { TracerouteTab } from "./speedtest/TracerouteTab";
 import { MonitorTab } from "./monitor/MonitorTab";
 import { DnsTab } from "./dns/DnsTab";
+import { TrippyTab } from "./trippy/TrippyTab";
+import { IranToolsTab } from "./irantools/IranToolsTab";
+import { PersianTour } from "./PersianTour";
 import { showToast } from "@/components/common/Toast";
 import {
   ChartBarIcon,
   PlayIcon,
   GlobeAltIcon,
   ServerIcon,
+  SignalIcon,
+  ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 import {
   Server,
@@ -47,6 +51,7 @@ import {
 } from "@/api/speedtest";
 import { settingsApi } from "@/api/settings";
 import { motion, AnimatePresence } from "motion/react";
+import { useTranslation } from "react-i18next";
 
 interface MainProps {
   isPublic?: boolean;
@@ -54,6 +59,7 @@ interface MainProps {
 
 export default function Main({ isPublic = false }: MainProps) {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [error, setError] = useState<string | null>(null);
   const [options, setOptions] = useState<TestOptions>({
     enableDownload: true,
@@ -87,40 +93,77 @@ export default function Main({ isPublic = false }: MainProps) {
     }
     return saved || "dashboard";
   });
-
-  // Tab configuration
-  const tabs = [
-    {
-      id: "dashboard",
-      label: "Dashboard",
-      icon: <ChartBarIcon className="w-5 h-5" />,
-    },
-    {
-      id: "speedtest",
-      label: "Speed Test",
-      icon: <PlayIcon className="w-5 h-5" />,
-    },
-        {
-      id: "traceroute",
-      label: "Traceroute",
-      icon: <GlobeAltIcon className="w-5 h-5" />,
-    },
-    {
-      id: "dns",
-      label: "DNS Tools",
-      icon: <GlobeAltIcon className="w-5 h-5" />,
-    },
-    {
-      id: "monitor",
-      label: "Agents",
-      icon: <ServerIcon className="w-5 h-5" />,
-    },
-  ];
+  const [runTour, setRunTour] = useState(false);
+  const [tourSavedTab, setTourSavedTab] = useState("dashboard");
 
   const handleTabChange = (tabId: string) => {
     setActiveTab(tabId);
     localStorage.setItem("netronome-active-tab", tabId);
   };
+
+  useEffect(() => {
+    if (isPublic) return;
+
+    const handleStartTour = () => {
+      setTourSavedTab(activeTab);
+      handleTabChange("dashboard");
+      setTimeout(() => {
+        setRunTour(true);
+      }, 400);
+    };
+
+    window.addEventListener("start-persian-tour", handleStartTour);
+
+    const completed = localStorage.getItem("persian_tour_completed");
+    if (!completed) {
+      setTimeout(() => {
+        handleStartTour();
+      }, 1000);
+    }
+
+    return () => {
+      window.removeEventListener("start-persian-tour", handleStartTour);
+    };
+  }, [isPublic]);
+
+  // Tab configuration
+  const tabs = [
+    {
+      id: "dashboard",
+      label: t("navigation.dashboard", "Dashboard"),
+      icon: <ChartBarIcon className="w-5 h-5" />,
+    },
+    {
+      id: "speedtest",
+      label: t("navigation.speedTest", "Speed Test"),
+      icon: <PlayIcon className="w-5 h-5" />,
+    },
+        {
+      id: "traceroute",
+      label: t("navigation.traceroute", "Traceroute"),
+      icon: <GlobeAltIcon className="w-5 h-5" />,
+    },
+    {
+      id: "dns",
+      label: t("navigation.dnsTools", "DNS Tools"),
+      icon: <GlobeAltIcon className="w-5 h-5" />,
+    },
+    {
+      id: "trippy",
+      label: t("navigation.trippy", "Trippy"),
+      icon: <SignalIcon className="w-5 h-5" />,
+    },
+    {
+      id: "monitor",
+      label: t("navigation.agents", "Agents"),
+      icon: <ServerIcon className="w-5 h-5" />,
+    },
+    {
+      id: "irantools",
+      label: t("navigation.iranTools", "Iran Tools"),
+      icon: <ShieldCheckIcon className="w-5 h-5" />,
+    },
+  ];
 
   // Queries
   const { data: speedtestServers = [] } = useQuery({
@@ -327,7 +370,7 @@ export default function Main({ isPublic = false }: MainProps) {
             : [],
         serverHost: testType === "iperf" ? selectedServers[0].host : undefined,
         serverName: testType === "iperf" ? selectedServers[0].name : undefined,
-        isPublicServer: testType === "librespeed" ? (selectedServers[0]?.isPublic ?? false) : false,
+        // isPublicServer is not needed here or not part of SpeedTestOptions
       });
     } catch (error) {
       console.error("Error running test:", error);
@@ -432,11 +475,6 @@ export default function Main({ isPublic = false }: MainProps) {
   return (
     <div className="min-h-screen flex flex-col">
       <Container maxWidth="xl" className="pb-20 sm:pb-8 pt-16 sm:pt-20 md:pt-14 flex-1">
-        {/* Test Progress - Always rendered with fixed height to prevent layout shift */}
-        <div className="flex justify-center mb-2 sm:mb-4 mt-2 sm:mt-4 md:mt-0 h-5">
-          <TestProgress progress={progress} />
-        </div>
-
         {/* Header - Now just an empty spacer */}
         <div className="mb-4 sm:mb-8" />
 
@@ -500,7 +538,7 @@ export default function Main({ isPublic = false }: MainProps) {
                 </div>
                 <button
                   onClick={() => setError(null)}
-                  className="flex-shrink-0 ml-4 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200"
+                  className="flex-shrink-0 ms-4 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors duration-200"
                   aria-label="Dismiss error"
                 >
                   <XMarkIcon className="w-5 h-5" />
@@ -610,6 +648,18 @@ export default function Main({ isPublic = false }: MainProps) {
             </motion.div>
           )}
 
+          {!isPublic && activeTab === "trippy" && (
+            <motion.div
+              key="trippy"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TrippyTab />
+            </motion.div>
+          )}
+
           {!isPublic && activeTab === "monitor" && (
             <motion.div
               key="monitor"
@@ -621,9 +671,27 @@ export default function Main({ isPublic = false }: MainProps) {
               <MonitorTab />
             </motion.div>
           )}
+
+          {!isPublic && activeTab === "irantools" && (
+            <motion.div
+              key="irantools"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <IranToolsTab />
+            </motion.div>
+          )}
         </AnimatePresence>
       </Container>
 
+      <PersianTour
+        run={runTour}
+        setRun={setRunTour}
+        onVisitTab={handleTabChange}
+        onComplete={() => handleTabChange(tourSavedTab)}
+      />
 
       {/* Public Footer */}
       {isPublic && (
@@ -650,7 +718,7 @@ export default function Main({ isPublic = false }: MainProps) {
                   <span className="underline decoration-gray-600 hover:decoration-gray-400">
                     Source
                   </span>
-                  <FaGithub className="ml-1 w-3.5 h-3.5" />
+                  <FaGithub className="ms-1 w-3.5 h-3.5" />
                 </a>
               </div>
             </div>

@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Dialog,
   DialogContent,
@@ -44,6 +45,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   className,
   ...props
 }) => {
+  const { t } = useTranslation();
   const [copySuccess, setCopySuccess] = useState(false);
 
   const publicUrl = useMemo(() => {
@@ -99,15 +101,14 @@ export const ShareModal: React.FC<ShareModalProps> = ({
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 border border-blue-500/30">
               <Share className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <DialogTitle>Share Speed Test Results</DialogTitle>
+            <DialogTitle>{t("speedtest.shareModal.title", "Share Speed Test Results")}</DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="space-y-4">
           <Card className="bg-gray-50/95 dark:bg-gray-850/95 border-gray-200 dark:border-gray-800 p-4 shadow-none">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Share some proof that your gigabit connection is more like
-              maybe-a-bit.
+              {t("speedtest.shareModal.description", "Share some proof that your gigabit connection is more like maybe-a-bit.")}
             </p>
           </Card>
 
@@ -116,16 +117,17 @@ export const ShareModal: React.FC<ShareModalProps> = ({
               htmlFor="share-url"
               className="text-gray-700 dark:text-gray-300 font-medium"
             >
-              Public Dashboard Link
+              {t("speedtest.shareModal.publicDashboardLink", "Public Dashboard Link")}
             </Label>
             <div className="flex gap-2">
               <Input
                 id="share-url"
                 type="text"
+                dir="ltr"
                 value={publicUrl}
                 readOnly
                 className="flex-1 bg-gray-200/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-900 text-gray-700 dark:text-gray-300"
-                aria-label="Public dashboard URL"
+                aria-label={t("speedtest.shareModal.publicUrlAriaLabel", "Public dashboard URL")}
               />
               <motion.div {...BUTTON_INTERACTION}>
                 <Button
@@ -139,7 +141,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                       : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100"
                   )}
                   aria-label={
-                    copySuccess ? "URL copied" : "Copy URL to clipboard"
+                    copySuccess
+                      ? t("speedtest.shareModal.urlCopied", "URL copied")
+                      : t("speedtest.shareModal.copyUrlToClipboard", "Copy URL to clipboard")
                   }
                   aria-pressed={copySuccess}
                 >
@@ -162,7 +166,7 @@ export const ShareModal: React.FC<ShareModalProps> = ({
                     aria-live="polite"
                   >
                     <Check className="h-3 w-3" />
-                    <span>URL copied to clipboard!</span>
+                    <span>{t("speedtest.shareModal.urlCopiedToClipboard", "URL copied to clipboard!")}</span>
                   </motion.div>
                 )}
               </AnimatePresence>

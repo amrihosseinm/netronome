@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import {
   XMarkIcon,
   ArrowDownIcon,
@@ -35,6 +36,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
   onClose,
   agent,
 }) => {
+  const { t } = useTranslation();
   const { status, nativeData, hardwareStats } = useMonitorAgent({
     agent,
     includeNativeData: true,
@@ -51,7 +53,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
         {/* Header */}
         <DialogHeader className="mb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center gap-3">
               {status?.connected ? (
                 <span className="relative inline-flex h-3 w-3 flex-shrink-0">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
@@ -69,12 +71,12 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                   {agent.isTailscale && (
                     <TailscaleLogo
                       className="h-4 w-4 flex-shrink-0"
-                      title="Connected through Tailscale"
+                      title={t("monitor.usageModal.connectedThroughTailscale", "Connected through Tailscale")}
                     />
                   )}
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Monitor Dashboard
+                  {t("monitor.usageModal.monitorDashboard", "Monitor Dashboard")}
                 </p>
               </div>
             </div>
@@ -83,7 +85,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
               className="rounded-md p-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300 hover:bg-gray-200/50 dark:hover:bg-gray-800/50 transition-colors"
               onClick={onClose}
             >
-              <span className="sr-only">Close</span>
+              <span className="sr-only">{t("common.close", "Close")}</span>
               <XMarkIcon className="h-6 w-6" aria-hidden="true" />
             </button>
           </div>
@@ -99,19 +101,19 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                 <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-800">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Current Speed
+                      {t("monitor.usageModal.currentSpeed", "Current Speed")}
                     </h3>
                     <ChartBarIcon className="h-5 w-5 text-gray-400" />
                   </div>
                   {status?.liveData ? (
                     <>
-                      <div className="flex items-center space-x-2 mb-2">
+                      <div className="flex items-center gap-2 mb-2">
                         <ArrowDownIcon className="h-4 w-4 text-blue-500" />
                         <span className="text-lg font-bold text-gray-900 dark:text-white">
                           {status.liveData.rx.ratestring}
                         </span>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center gap-2">
                         <ArrowUpIcon className="h-4 w-4 text-green-500" />
                         <span className="text-lg font-bold text-gray-900 dark:text-white">
                           {status.liveData.tx.ratestring}
@@ -119,7 +121,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                       </div>
                     </>
                   ) : (
-                    <p className="text-gray-500 dark:text-gray-400">No data</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t("monitor.usageModal.noData", "No data")}</p>
                   )}
                 </div>
 
@@ -127,7 +129,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                 <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-800">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      Today's Usage
+                      {t("monitor.usageModal.todaysUsage", "Today's Usage")}
                     </h3>
                     <ChartBarIcon className="h-5 w-5 text-gray-400" />
                   </div>
@@ -136,14 +138,14 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                       <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                         {formatBytes(usage["Today"].total)}
                       </p>
-                      <div className="flex items-center space-x-4 text-sm">
-                        <div className="flex items-center space-x-1">
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1">
                           <ArrowDownIcon className="h-3 w-3 text-blue-500" />
                           <span className="text-gray-600 dark:text-gray-400">
                             {formatBytes(usage["Today"].download)}
                           </span>
                         </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center gap-1">
                           <ArrowUpIcon className="h-3 w-3 text-green-500" />
                           <span className="text-gray-600 dark:text-gray-400">
                             {formatBytes(usage["Today"].upload)}
@@ -152,7 +154,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                       </div>
                     </>
                   ) : (
-                    <p className="text-gray-500 dark:text-gray-400">No data</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t("monitor.usageModal.noData", "No data")}</p>
                   )}
                 </div>
 
@@ -160,7 +162,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                 <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-800">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      System Health
+                      {t("monitor.usageModal.systemHealth", "System Health")}
                     </h3>
                     <CpuChipIcon className="h-5 w-5 text-gray-400" />
                   </div>
@@ -168,7 +170,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          CPU
+                          {t("monitor.usageModal.cpu", "CPU")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {hardwareStats.cpu.usage_percent.toFixed(1)}%
@@ -190,7 +192,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          Memory
+                          {t("monitor.usageModal.memory", "Memory")}
                         </span>
                         <span className="text-sm font-medium text-gray-900 dark:text-white">
                           {hardwareStats.memory.used_percent.toFixed(1)}%
@@ -225,10 +227,10 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                             return (
                               <div className="flex justify-between items-center">
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  Temperature
+                                  {t("monitor.usageModal.temperature", "Temperature")}
                                 </span>
                                 <span className="text-sm font-medium text-red-600 dark:text-red-400">
-                                  {hotSensors.length} Hot
+                                  {t("monitor.usageModal.hotCount", "{{count}} Hot", { count: hotSensors.length })}
                                 </span>
                               </div>
                             );
@@ -236,10 +238,10 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                             return (
                               <div className="flex justify-between items-center">
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  Temperature
+                                  {t("monitor.usageModal.temperature", "Temperature")}
                                 </span>
                                 <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
-                                  {warmSensors.length} Warm
+                                  {t("monitor.usageModal.warmCount", "{{count}} Warm", { count: warmSensors.length })}
                                 </span>
                               </div>
                             );
@@ -247,10 +249,10 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                             return (
                               <div className="flex justify-between items-center">
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                                  Temperature
+                                  {t("monitor.usageModal.temperature", "Temperature")}
                                 </span>
                                 <span className="text-sm font-medium text-green-600 dark:text-green-400">
-                                  Normal
+                                  {t("monitor.usageModal.normal", "Normal")}
                                 </span>
                               </div>
                             );
@@ -258,7 +260,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                         })()}
                     </div>
                   ) : (
-                    <p className="text-gray-500 dark:text-gray-400">No data</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t("monitor.usageModal.noData", "No data")}</p>
                   )}
                 </div>
               </div>
@@ -267,7 +269,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
               {usage && (
                 <div className="bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 md:p-8 shadow-lg border border-gray-200 dark:border-gray-800">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-6">
-                    Usage Summary
+                    {t("monitor.usageModal.usageSummary", "Usage Summary")}
                   </h3>
                   <div className="space-y-4">
                     {Object.entries(usage).map(([period, data]) => (
@@ -279,14 +281,14 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                           <p className="font-medium text-gray-900 dark:text-white">
                             {period}
                           </p>
-                          <div className="flex items-center space-x-3 mt-1">
-                            <div className="flex items-center space-x-1">
+                          <div className="flex items-center gap-3 mt-1">
+                            <div className="flex items-center gap-1">
                               <ArrowDownIcon className="h-3 w-3 text-blue-500" />
                               <span className="text-xs text-gray-600 dark:text-gray-400">
                                 {formatBytes(data.download)}
                               </span>
                             </div>
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center gap-1">
                               <ArrowUpIcon className="h-3 w-3 text-green-500" />
                               <span className="text-xs text-gray-600 dark:text-gray-400">
                                 {formatBytes(data.upload)}
@@ -294,7 +296,7 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
+                        <div className="text-end">
                           <p className="font-bold text-gray-900 dark:text-white">
                             {formatBytes(data.total)}
                           </p>
@@ -311,10 +313,10 @@ export const MonitorUsageModal: React.FC<MonitorUsageModalProps> = ({
                 <AgentIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
               </div>
               <p className="text-lg text-gray-900 dark:text-white font-medium mb-2">
-                Agent Disconnected
+                {t("monitor.usageModal.agentDisconnected", "Agent Disconnected")}
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Unable to connect to {agent.url}
+                {t("monitor.usageModal.unableToConnect", "Unable to connect to")} <span dir="ltr">{agent.url}</span>
               </p>
             </div>
           )}

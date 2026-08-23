@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { TracerouteUpdate } from "@/types/types";
 import { TracerouteTable } from "./components/TracerouteTable";
 import { TracerouteMobileCards } from "./components/TracerouteMobileCards";
@@ -15,6 +16,7 @@ interface TracerouteLiveResultsProps {
 export const TracerouteLiveResults: React.FC<TracerouteLiveResultsProps> = ({
   tracerouteStatus,
 }) => {
+  const { t } = useTranslation();
   // Don't show if complete or no hops yet
   if (tracerouteStatus.isComplete || !tracerouteStatus.hops?.length) {
     return null;
@@ -24,26 +26,26 @@ export const TracerouteLiveResults: React.FC<TracerouteLiveResultsProps> = ({
     <div className="mb-6 bg-gray-50/95 dark:bg-gray-850/95 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Traceroute Results (In Progress)
+          {t("traceroute.tracerouteResultsInProgress", "Traceroute Results (In Progress)")}
         </h2>
       </div>
 
       <div className="mb-4">
         <div className="text-sm text-gray-600 dark:text-gray-400">
-          <span className="font-medium">Destination:</span>{" "}
+          <span className="font-medium">{t("traceroute.destination", "Destination:")}</span>{" "}
           {tracerouteStatus.host}
           {tracerouteStatus.ip && <span> ({tracerouteStatus.ip})</span>}
           <br />
-          <span className="font-medium">Hops discovered:</span>{" "}
+          <span className="font-medium">{t("traceroute.hopsDiscovered", "Hops discovered:")}</span>{" "}
           {tracerouteStatus.hops.length}
           {tracerouteStatus.terminatedEarly && (
             <>
               <br />
               <span className="font-medium text-amber-600 dark:text-amber-400">
-                Status:
+                {t("traceroute.status", "Status:")}
               </span>{" "}
               <span className="text-amber-600 dark:text-amber-400">
-                Early termination (reached destination or too many timeouts)
+                {t("traceroute.earlyTermination", "Early termination (reached destination or too many timeouts)")}
               </span>
             </>
           )}

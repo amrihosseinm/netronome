@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { TracerouteUpdate } from "@/types/types";
 
 interface TracerouteProgressProps {
@@ -13,6 +14,8 @@ interface TracerouteProgressProps {
 export const TracerouteProgress: React.FC<TracerouteProgressProps> = ({
   tracerouteStatus,
 }) => {
+  const { t } = useTranslation();
+
   if (tracerouteStatus.isComplete) {
     return null;
   }
@@ -21,7 +24,7 @@ export const TracerouteProgress: React.FC<TracerouteProgressProps> = ({
     <div className="mb-6 p-4 backdrop-blur-sm bg-blue-500/10 border border-blue-500/30 rounded-lg">
       <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-3">
         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
-        <span>Running traceroute to {tracerouteStatus.host}...</span>
+        <span>{t("traceroute.runningTraceroute", "Running traceroute to {{host}}...", { host: tracerouteStatus.host })}</span>
       </div>
 
       <div className="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2">
@@ -34,8 +37,11 @@ export const TracerouteProgress: React.FC<TracerouteProgressProps> = ({
       </div>
 
       <div className="text-sm text-blue-600 dark:text-blue-300 mt-2">
-        Hop {tracerouteStatus.currentHop} of {tracerouteStatus.totalHops} (
-        {Math.round(tracerouteStatus.progress)}%)
+        {t("traceroute.hopProgress", "Hop {{current}} of {{total}} ({{percent}}%)", {
+          current: tracerouteStatus.currentHop,
+          total: tracerouteStatus.totalHops,
+          percent: Math.round(tracerouteStatus.progress),
+        })}
       </div>
     </div>
   );

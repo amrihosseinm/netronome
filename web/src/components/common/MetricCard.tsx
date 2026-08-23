@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface MetricCardProps {
   icon: React.ReactNode;
@@ -24,6 +25,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   className = "",
   status = "normal",
 }) => {
+  const { t } = useTranslation();
   const statusColors = {
     normal: "",
     success: "ring-1 ring-emerald-500/20 bg-emerald-500/5",
@@ -56,9 +58,9 @@ export const MetricCard: React.FC<MetricCardProps> = ({
       </div>
       {average && (
         <div className="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-          <span className="hidden sm:inline">Average: </span>
-          <span className="sm:hidden">Avg: </span>
-          {average} {unit}
+          <span className="hidden sm:inline">{t("common.average", "Average")}: </span>
+          <span className="sm:hidden">{t("common.avg", "Avg")}: </span>
+          <span dir="ltr" className="inline-block">{average} {unit}</span>
         </div>
       )}
     </div>

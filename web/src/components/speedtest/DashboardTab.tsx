@@ -9,8 +9,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import { motion } from "motion/react";
 import { ColumnDef } from "@tanstack/react-table";
 import { SpeedTestResult, TimeRange } from "@/types/types";
+import { useTranslation } from "react-i18next";
 import { SpeedHistoryChart } from "./SpeedHistoryChart";
 import { MetricCard } from "@/components/common/MetricCard";
+import { downloadHistoryCSV } from "@/api/speedtest";
+import { toast } from "sonner";
+import { Download } from "lucide-react";
 import { FeaturedMonitorWidget } from "@/components/monitor/FeaturedMonitorWidget";
 import {
   FaWaveSquare,
@@ -35,6 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import { DataTable } from "@/components/ui/data-table";
 import { getSpeedTestColumns, getSpeedTestMobileColumns } from "./columns";
+import { GuideSection } from "@/components/irantools/GuideSection";
 import {
   DndContext,
   closestCenter,
@@ -169,16 +174,17 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   onNavigateToSpeedTest,
   onNavigateToVnstat,
 }) => {
+  const { t } = useTranslation();
   const { settings } = useTimeSettings();
   const [displayCount, setDisplayCount] = useState(recentSpeedtestsRows);
   const [isRecentTestsOpen, setIsRecentTestsOpen] = useState(() => {
     const saved = localStorage.getItem("recent-tests-open");
     return saved === null ? true : saved === "true";
   });
-  const columns = useMemo(() => getSpeedTestColumns(settings), [settings]);
+  const columns = useMemo(() => getSpeedTestColumns(settings, t), [settings, t]);
   const mobileColumns = useMemo(
-    () => getSpeedTestMobileColumns(settings),
-    [settings]
+    () => getSpeedTestMobileColumns(settings, t),
+    [settings, t]
   );
 
   // Initialize section order from localStorage or default
@@ -240,7 +246,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
   const calculateAverage = (field: keyof SpeedTestResult): string => {
     const dataToUse = filteredDisplayTests.length > 0 ? filteredDisplayTests : tests;
-    if (dataToUse.length === 0) return "N/A";
+    if (dataToUse.length === 0) return t("speedtest.dashboardTab.notAvailable", "N/A");
 
     const validValues = dataToUse
       .map((test) => {
@@ -252,7 +258,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
       })
       .filter((value) => !isNaN(value));
 
-    if (validValues.length === 0) return "N/A";
+    if (validValues.length === 0) return t("speedtest.dashboardTab.notAvailable", "N/A");
 
     const avg =
       validValues.reduce((sum, value) => sum + value, 0) / validValues.length;
@@ -272,17 +278,17 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-tour="dashboard-content">
       {/* No History Available message */}
       {!hasAnyTests && (
         <div className="max-w-xl mx-auto bg-gray-50/95 dark:bg-gray-850/95 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-200 dark:border-gray-900">
           <div className="text-center space-y-3 sm:space-y-4">
             <div>
               <h2 className="text-gray-900 dark:text-white text-lg sm:text-xl font-semibold mb-1 sm:mb-2">
-                No History Available
+                {t("dashboard.noHistoryTitle", "No History Available")}
               </h2>
               <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                Start monitoring your network performance
+                {t("dashboard.noHistorySubtitle", "Start monitoring your network performance")}
               </p>
             </div>
 
@@ -302,15 +308,15 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
 
             <div className="max-w-md mx-auto">
               <p className="text-gray-600 dark:text-gray-400 text-sm">
-                Go to the{" "}
+                {t("speedtest.dashboardTab.noHistoryGoTo", "Go to the")}{" "}
                 <button
                   onClick={onNavigateToSpeedTest}
                   className="inline-flex items-center mx-1 px-3 py-2 sm:px-2 sm:py-1 min-h-[44px] sm:min-h-0 rounded-lg transition-colors text-xs bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20 touch-manipulation"
                   disabled={!onNavigateToSpeedTest}
                 >
-                  Speed Test tab
+                  {t("speedtest.dashboardTab.speedTestTabLink", "Speed Test tab")}
                 </button>{" "}
-                to run manual tests or set up automated schedules
+                {t("speedtest.dashboardTab.noHistoryRunManual", "to run manual tests or set up automated schedules")}
               </p>
             </div>
           </div>
@@ -333,46 +339,46 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
         >
           <h2
             className={cn(
-              "text-gray-900 dark:text-white text-xl ml-1 font-semibold",
+              "text-gray-900 dark:text-white text-xl ms-1 font-semibold",
               isPublic && "sm:pt-6"
             )}
           >
-            Latest Run
+            {t("speedtest.dashboardTab.latestRun", "Latest Run")}
           </h2>
-          <div className="flex justify-between ml-1 items-center text-gray-600 dark:text-gray-400 text-sm mb-4">
+          <div className="flex justify-between ms-1 items-center text-gray-600 dark:text-gray-400 text-sm mb-4">
             <div>
-              Last test run:{" "}
+              {t("speedtest.dashboardTab.lastTestRun", "Last test run:")}{" "}
               {latestTest?.createdAt
                 ? formatDateTimeWithSettings(latestTest.createdAt, settings)
-                : "N/A"}
+                : t("speedtest.dashboardTab.notAvailable", "N/A")}
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 cursor-default relative">
             <MetricCard
               icon={<IoIosPulse className="w-5 h-5 text-amber-500" />}
-              title="Latency"
+              title={t("speedtest.dashboardTab.metricLatency", "Latency")}
               value={parseFloat((filteredLatestTestComputed || latestTest)!.latency).toFixed(2)}
               unit="ms"
               average={calculateAverage("latency")}
             />
             <MetricCard
               icon={<FaArrowDown className="w-5 h-5 text-blue-500" />}
-              title="Download"
+              title={t("speedtest.dashboardTab.metricDownload", "Download")}
               value={(filteredLatestTestComputed || latestTest)!.downloadSpeed.toFixed(2)}
               unit="Mbps"
               average={calculateAverage("downloadSpeed")}
             />
             <MetricCard
               icon={<FaArrowUp className="w-5 h-5 text-emerald-500" />}
-              title="Upload"
+              title={t("speedtest.dashboardTab.metricUpload", "Upload")}
               value={(filteredLatestTestComputed || latestTest)!.uploadSpeed.toFixed(2)}
               unit="Mbps"
               average={calculateAverage("uploadSpeed")}
             />
             <MetricCard
               icon={<FaWaveSquare className="w-5 h-5 text-purple-400" />}
-              title="Jitter"
-              value={(filteredLatestTestComputed || latestTest)!.jitter?.toFixed(2) ?? "N/A"}
+              title={t("speedtest.dashboardTab.metricJitter", "Jitter")}
+              value={(filteredLatestTestComputed || latestTest)!.jitter?.toFixed(2) ?? t("speedtest.dashboardTab.notAvailable", "N/A")}
               unit="ms"
               average={
                 (filteredLatestTestComputed || latestTest)!.jitter !== null &&
@@ -392,7 +398,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                       onMouseEnter={() => setIsShareHovered(true)}
                       onMouseLeave={() => setIsShareHovered(false)}
                       className="relative p-2 min-w-[36px] min-h-[36px] text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200 z-10 opacity-60 hover:opacity-100 touch-manipulation flex items-center justify-center"
-                      aria-label="Share public speed test page"
+                      aria-label={t("speedtest.dashboardTab.shareAriaLabel", "Share public speed test page")}
                       whileTap={{ scale: 0.9 }}
                       transition={{ duration: 0.2 }}
                     >
@@ -404,7 +410,7 @@ export const DashboardTab: React.FC<DashboardTabProps> = ({
                     </motion.button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Share speed test results</p>
+                    <p>{t("speedtest.dashboardTab.shareTooltip", "Share speed test results")}</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -503,6 +509,7 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
   dragHandleListeners,
   dragHandleClassName,
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="shadow-lg rounded-xl overflow-hidden">
       <Collapsible
@@ -516,7 +523,7 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
             isRecentTestsOpen ? "rounded-t-xl" : "rounded-xl",
             "border border-gray-200 dark:border-gray-800",
             isRecentTestsOpen ? "border-b-0" : "",
-            "text-left transition-all duration-200 touch-manipulation"
+            "text-start transition-all duration-200 touch-manipulation"
           )}
         >
           <div className="flex items-center gap-2">
@@ -531,8 +538,19 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
               <FaGripVertical className="w-4 h-4 text-gray-400 dark:text-gray-600" />
             </div>
             <h2 className="text-gray-900 dark:text-white text-lg sm:text-xl font-semibold p-1 select-none">
-              Recent Speedtests
+              {t("speedtest.dashboardTab.recentSpeedtests", "Recent Speedtests")}
             </h2>
+            <button
+              onClick={(e) => {
+                e.stopPropagation(); // prevent toggling the collapsible
+                downloadHistoryCSV();
+              }}
+              className="ms-4 flex items-center justify-center px-2 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 transition-colors border border-blue-500/20"
+              title={t("speedtest.dashboardTab.exportCsvTitle", "Export to CSV")}
+            >
+              <Download className="w-4 h-4 me-2" />
+              <span className="text-xs font-medium">{t("speedtest.dashboardTab.exportCsv", "Export CSV")}</span>
+            </button>
           </div>
           <div className="p-1 -m-1">
             <ChevronDownIcon
@@ -566,7 +584,7 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
                 showColumnVisibility={true}
                 showRowSelection={false}
                 filterColumn="serverName"
-                filterPlaceholder="Filter by server..."
+                filterPlaceholder={t("speedtest.dashboardTab.filterByServer", "Filter by server...")}
                 className="-mt-4"
               />
             </div>
@@ -591,7 +609,7 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
                 {/* Test Count */}
                 <div className="text-center">
                   <span className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm">
-                    Showing {displayedTests.length} of {tests.length} tests
+                    {t("speedtest.dashboardTab.showingTests", "Showing {{shown}} of {{total}} tests", { shown: displayedTests.length, total: tests.length })}
                   </span>
                 </div>
 
@@ -602,8 +620,8 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
                       onClick={() => setDisplayCount((prev) => prev + 5)}
                       className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-3 sm:py-2 min-h-[44px] sm:min-h-0 bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-lg transition-colors duration-200 text-sm font-medium touch-manipulation border border-blue-500/20 hover:border-blue-600/50"
                     >
-                      Load {Math.min(5, tests.length - displayCount)} more
-                      <span className="ml-2">↓</span>
+                      {t("speedtest.dashboardTab.loadMore", "Load {{count}} more", { count: Math.min(5, tests.length - displayCount) })}
+                      <span className="ms-2">↓</span>
                     </button>
                   )}
 
@@ -612,8 +630,8 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
                       onClick={() => setDisplayCount(defaultDisplayCount)}
                       className="inline-flex items-center justify-center w-full sm:w-auto px-4 py-3 sm:py-2 min-h-[44px] sm:min-h-0 bg-gray-600/10 hover:bg-gray-600/20 text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded-lg transition-colors duration-200 text-sm font-medium touch-manipulation"
                     >
-                      Show less
-                      <span className="ml-2">↑</span>
+                      {t("speedtest.dashboardTab.showLess", "Show less")}
+                      <span className="ms-2">↑</span>
                     </button>
                   )}
                 </div>
@@ -622,6 +640,18 @@ const DraggableRecentSpeedtests: React.FC<DraggableRecentSpeedtestsProps> = ({
           </motion.div>
         </CollapsibleContent>
       </Collapsible>
+
+      {/* Dashboard Guide */}
+      <GuideSection title={t("dashboard.guide.title", "About the Dashboard")}>
+        <p>{t("dashboard.guide.p1", "The Dashboard is your main overview page. It displays your most recent speed test results, bandwidth history charts, and any featured monitoring agents at a glance.")}</p>
+        <p>{t("dashboard.guide.p2", "From here you can quickly review trends in your network performance over time and share results with others.")}</p>
+        <ul className="list-disc list-inside space-y-1">
+          <li>{t("dashboard.guide.li1", "The performance history chart shows download, upload, and ping trends over a selected time range.")}</li>
+          <li>{t("dashboard.guide.li2", "Click 'View Details' on any test result to see full metrics for that specific test.")}</li>
+          <li>{t("dashboard.guide.li3", "Use the Share button to generate a public link for sharing your results.")}</li>
+          <li>{t("dashboard.guide.li4", "You can pin monitoring agents to this dashboard from the Agents tab.")}</li>
+        </ul>
+      </GuideSection>
     </div>
   );
 };

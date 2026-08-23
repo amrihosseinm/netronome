@@ -4,6 +4,7 @@
  */
 
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { motion } from "motion/react";
 import { MonitorAgent } from "@/api/monitor";
 import { MonitorOverviewTab } from "./tabs/MonitorOverviewTab";
@@ -18,12 +19,14 @@ interface MonitorAgentDetailsTabsProps {
 export const MonitorAgentDetailsTabs: React.FC<
   MonitorAgentDetailsTabsProps
 > = ({ agent }) => {
+  const { t } = useTranslation();
+
   return (
     <Tabs defaultValue="overview" className="space-y-2">
       <TabsList>
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="bandwidth">Bandwidth</TabsTrigger>
-        <TabsTrigger value="system">System & Hardware</TabsTrigger>
+        <TabsTrigger value="overview">{t("monitor.detailsTabs.overview", "Overview")}</TabsTrigger>
+        <TabsTrigger value="bandwidth">{t("monitor.detailsTabs.bandwidth", "Bandwidth")}</TabsTrigger>
+        <TabsTrigger value="system">{t("monitor.detailsTabs.systemAndHardware", "System & Hardware")}</TabsTrigger>
       </TabsList>
 
       <TabsContent value="overview">

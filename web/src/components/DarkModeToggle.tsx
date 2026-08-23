@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "motion/react";
 import {
   getCurrentThemeMode,
@@ -46,13 +47,6 @@ interface ThemeOption {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
 }
-
-// Theme options configuration
-const themeOptions: ThemeOption[] = [
-  { value: "light", label: "Light", icon: SunIcon },
-  { value: "dark", label: "Dark", icon: MoonIcon },
-  { value: "auto", label: "System", icon: ComputerDesktopIcon },
-];
 
 // Custom hook for theme change detection
 const useThemeChange = () => {
@@ -124,9 +118,17 @@ const useClickOutside = <T extends HTMLElement = HTMLElement>(
 };
 
 export const DarkModeToggle: React.FC = () => {
+  const { t } = useTranslation();
   const [showMenu, setShowMenu] = useState(false);
   const currentMode = useThemeChange();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Theme options configuration
+  const themeOptions: ThemeOption[] = [
+    { value: "light", label: t("common.darkMode.light", "Light"), icon: SunIcon },
+    { value: "dark", label: t("common.darkMode.dark", "Dark"), icon: MoonIcon },
+    { value: "auto", label: t("common.darkMode.system", "System"), icon: ComputerDesktopIcon },
+  ];
   
   // Close menu when clicking outside
   useClickOutside(menuRef, () => {
@@ -177,7 +179,7 @@ export const DarkModeToggle: React.FC = () => {
         variant="ghost"
         size="icon"
         className="text-gray-600 dark:text-gray-600 hover:text-gray-900 dark:hover:text-gray-400"
-        aria-label="Theme options"
+        aria-label={t("common.darkMode.themeOptionsLabel", "Theme options")}
         aria-expanded={showMenu}
         aria-haspopup="true"
       >
@@ -250,7 +252,7 @@ const ThemeOptionButton: React.FC<ThemeOptionButtonProps> = React.memo(
             isSelected ? "text-blue-600 dark:text-blue-400" : ""
           }`}
         />
-        <span className="flex-1 text-left font-medium">{option.label}</span>
+        <span className="flex-1 text-start font-medium">{option.label}</span>
         <motion.div
           initial={false}
           animate={{

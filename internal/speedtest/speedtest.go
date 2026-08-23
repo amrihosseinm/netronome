@@ -18,6 +18,7 @@ import (
 type Service interface {
 	RunTest(ctx context.Context, opts *types.TestOptions) (*Result, error)
 	GetServers(testType string) ([]ServerResponse, error)
+	RefreshServers(testType string) ([]ServerResponse, error)
 	GetLibrespeedServers() ([]ServerResponse, error)
 	RunLibrespeedTest(ctx context.Context, opts *types.TestOptions) (*Result, error)
 	RunTraceroute(ctx context.Context, host string) (*TracerouteResult, error)
@@ -173,5 +174,17 @@ func (s *service) GetServers(testType string) ([]ServerResponse, error) {
 		return s.speedtestNetRunner.GetServers()
 	default:
 		return s.speedtestNetRunner.GetServers()
+	}
+}
+
+// RefreshServers forces a fresh server list fetch, bypassing the cache.
+func (s *service) RefreshServers(testType string) ([]ServerResponse, error) {
+	switch testType {
+	case "librespeed":
+		return s.GetLibrespeedServers()
+	case "iperf3":
+		return s.iperfRunner.GetServers()
+	default:
+		return s.speedtestNetRunner.RefreshServers()
 	}
 }

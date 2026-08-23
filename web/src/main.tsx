@@ -12,6 +12,7 @@ import "./styles/tab-navigation.css";
 import "./i18n";
 import { router } from "@/routes";
 import { AuthProvider } from "@/context/auth";
+import { AppDirectionProvider } from "@/context/direction";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -38,11 +39,13 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <RouterProvider router={router} />
-          </TooltipProvider>
-        </AuthProvider>
+        <AppDirectionProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <RouterProvider router={router} />
+            </TooltipProvider>
+          </AuthProvider>
+        </AppDirectionProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>
