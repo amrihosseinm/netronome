@@ -208,6 +208,13 @@ func (s *Server) RegisterRoutes() {
 	if routeBase != "" {
 		apiGroup = apiGroup.Group("")
 	}
+
+	// Keep health checks public and return JSON instead of falling through to
+	// the SPA catch-all. This is also used by launchers and reverse proxies.
+	apiGroup.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+
 	api := apiGroup.Group("/api")
 	{
 		// public auth routes
@@ -273,6 +280,9 @@ func (s *Server) RegisterRoutes() {
 
 			// Protocol/port reachability check (reflects local ISP/regional conditions)
 			protected.POST("/protocheck/run", handlers.HandleProtoCheckRun)
+
+			// Windscribe VPN protocol/port reachability check
+			protected.POST("/windscribecheck/run", handlers.HandleWindscribeCheck)
 
 			// Packet Loss monitoring routes
 			if s.packetLossService != nil {

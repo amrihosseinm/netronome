@@ -17,6 +17,7 @@ import { showToast } from "@/components/common/Toast";
 import { copyToClipboard } from "@/utils/clipboard";
 import { InfoTooltip } from "./InfoTooltip";
 import { GuideSection } from "./GuideSection";
+import { getApiUrl } from "@/utils/baseUrl";
 
 interface IPResult {
   ip: string;
@@ -36,6 +37,19 @@ interface EdgeScanStatus {
   error?: string;
 }
 
+const PRESET_DOMAINS = [
+  "chat.openai.com",
+  "discord.com",
+  "www.speedtest.net",
+  "cdn.jsdelivr.net",
+  "www.cloudflare.com",
+  "dash.cloudflare.com",
+  "workers.dev",
+  "www.github.com",
+  "api.github.com",
+  "www.google.com",
+];
+
 export function EdgeScannerPanel() {
   const { t } = useTranslation();
   const [sni, setSni] = useState("chat.openai.com");
@@ -49,10 +63,10 @@ export function EdgeScannerPanel() {
 
   const fetchStatus = useCallback(async () => {
     try {
-      const res = await fetch("/api/edgescan/status");
+      const res = await fetch(getApiUrl("/edgescan/status"));
       if (!res.ok) return;
       const data: EdgeScanStatus = await res.json();
-      setStatus(data);
+      setStatus({ ...data, results: Array.isArray(data.results) ? data.results : [] });
       setIsRunning(data.running);
     } catch {
       /* ignore */
@@ -92,7 +106,7 @@ export function EdgeScannerPanel() {
     }
 
     try {
-      const res = await fetch("/api/edgescan/start", {
+      const res = await fetch(getApiUrl("/edgescan/start"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sni: sni.trim(), ranges, workers }),
@@ -105,14 +119,15 @@ export function EdgeScannerPanel() {
       setTimeout(fetchStatus, 1000);
     } catch (err) {
       showToast(t("iranTools.edgeScanner.startFailed"), "error", {
-        description: err instanceof Error ? err.message : undefined,
+        description: t("common.loadFailedHint"),
       });
+      console.error("Edge scan failed:", err);
     }
   };
 
   const handleStop = async () => {
     try {
-      await fetch("/api/edgescan/stop", { method: "POST" });
+      await fetch(getApiUrl("/edgescan/stop"), { method: "POST" });
       setIsRunning(false);
       if (pollRef.current) clearInterval(pollRef.current);
       fetchStatus();
@@ -164,6 +179,28 @@ export function EdgeScannerPanel() {
             placeholder={t("iranTools.edgeScanner.sniPlaceholder")}
             className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 text-sm text-start focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
           />
+          <div className="mt-2">
+            <span className="text-xs text-gray-400 dark:text-gray-500 mb-1.5 block">
+              {t("iranTools.edgeScanner.sniPresets")}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {PRESET_DOMAINS.map((domain) => (
+                <button
+                  key={domain}
+                  type="button"
+                  disabled={isRunning}
+                  onClick={() => setSni(domain)}
+                  className={`px-2 py-0.5 rounded-full text-xs border transition-colors disabled:opacity-50 font-mono ${
+                    sni === domain
+                      ? "bg-indigo-600 text-white border-indigo-600"
+                      : "bg-transparent text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                  }`}
+                >
+                  {domain}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div>

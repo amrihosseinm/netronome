@@ -1,0 +1,56 @@
+# Netronome - Railway Deployment Config
+
+[database]
+type = "sqlite"
+path = "/data/netronome.db"
+
+[server]
+host = "0.0.0.0"
+port = 7575
+
+[logging]
+level = "info"
+
+[auth]
+# Open to all IPs for Railway public deployment
+whitelist = ["0.0.0.0/0", "::/0"]
+
+[oidc]
+issuer = ""
+client_id = ""
+client_secret = ""
+redirect_url = ""
+
+[speedtest]
+timeout = 30
+
+[speedtest.iperf]
+test_duration = 10
+parallel_conns = 10
+timeout = 30
+
+[speedtest.iperf.ping]
+count = 5
+interval = 1000
+timeout = 10
+
+[speedtest.librespeed]
+timeout = 60
+
+[geoip]
+country_database_path = ""
+asn_database_path = ""
+
+[packetloss]
+enabled = false
+default_interval = 3600
+default_packet_count = 10
+max_concurrent_monitors = 5
+privileged_mode = false
+mtr_enable_dns = false
+
+[monitor]
+enabled = false
+
+[tailscale]
+enabled = false

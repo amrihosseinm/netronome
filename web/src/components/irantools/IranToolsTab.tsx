@@ -17,6 +17,7 @@ import { EdgeScannerPanel } from "./EdgeScannerPanel";
 import { SniSpoofPanel } from "./SniSpoofPanel";
 import { VlessModifierPanel } from "./VlessModifierPanel";
 import { ProtocolCheckerPanel } from "./ProtocolCheckerPanel";
+import { WindscribeCheckerPanel } from "./WindscribeCheckerPanel";
 
 export function IranToolsTab() {
   const { t } = useTranslation();
@@ -38,6 +39,10 @@ export function IranToolsTab() {
             <SignalIcon className="w-4 h-4" />
             {t("iranTools.tabs.protocolChecker")}
           </TabsTrigger>
+          <TabsTrigger value="windscribeChecker" className="gap-1.5">
+            <ShieldCheckIcon className="w-4 h-4" />
+            {t("iranTools.tabs.windscribeChecker")}
+          </TabsTrigger>
           <TabsTrigger value="domainChecker" className="gap-1.5">
             <GlobeAltIcon className="w-4 h-4" />
             {t("iranTools.tabs.domainChecker")}
@@ -58,6 +63,9 @@ export function IranToolsTab() {
 
         <TabsContent value="protocolChecker" className="pt-4">
           <ProtocolCheckerPanel />
+        </TabsContent>
+        <TabsContent value="windscribeChecker" className="pt-4">
+          <WindscribeCheckerPanel />
         </TabsContent>
         <TabsContent value="domainChecker" className="pt-4">
           <DomainCheckerPanel />
